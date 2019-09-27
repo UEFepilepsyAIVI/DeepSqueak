@@ -1,5 +1,7 @@
 % --- Executes on button press in multinetdect.
 function multinetdect_Callback(hObject, eventdata, handles, SingleDetect)
+
+
 if isempty(handles.audiofiles)
     errordlg('No Audio Selected')
     return
@@ -69,6 +71,7 @@ for j = 1:length(audioselections)
         h = waitbar(0,'Loading neural network...');
         
         AudioFile = fullfile(handles.audiofiles(CurrentAudioFile).folder,handles.audiofiles(CurrentAudioFile).name);
+        
         networkname = handles.networkfiles(networkselections(k)).name;
         networkpath = fullfile(handles.networkfiles(networkselections(k)).folder,networkname);
         NeuralNetwork=load(networkpath);%get currently selected option from menu
@@ -91,8 +94,20 @@ for j = 1:length(audioselections)
     
     %% Save the file
     
+    audiodata = struct;
+    
+    info = audioinfo(AudioFile);
+    rate = info.SampleRate;
+    audiodata.duration = info.Duration;
+    
+    [y,Fs] = audioread(AudioFile);
+    t = 0:seconds(1/Fs):seconds(info.Duration);
+    t = t(1:end-1);    
 
     
+    AudioFile = strsplit(AudioFile,filesep);
+    audiodata.AudioFile = AudioFile{end};
+   
     % Append date to filename
     if Settings(7)
         fname = fullfile(handles.data.settings.detectionfolder,[audioname ' ' detectiontime '.mat']);
@@ -104,7 +119,7 @@ for j = 1:length(audioselections)
     fprintf(1,'%d Calls found in: %s \n',height(Calls),audioname)
     
     if ~isempty(Calls)
-        save(fname,'Calls','Settings','AudioFile','detectiontime','networkselections','-v7.3','-mat');
+        save(fname,'Calls','Settings','AudioFile','detectiontime','networkselections','audiodata','-v7.3','-mat');
     end
     
     delete(h)

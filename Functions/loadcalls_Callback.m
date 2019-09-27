@@ -9,13 +9,44 @@ if nargin == 3 % if "Load Calls" button pressed
 end
 
 handles.data.calls = [];
-handles.data.calls = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
+handles.data.audiodata = [];
+[handles.data.calls, handles.data.audiodata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
+
+audiofile_name = regexp(handles.current_detection_file, '(\s+)(?=[\w.-]+\s[\w.-]+\s[\w.-]+$)','split');
+audiofile_name = audiofile_name{1};
+
+for i=1:length(handles.audiofilesnames) 
+    if ~isempty(regexp(handles.audiofilesnames{i}, strcat('^',audiofile_name, '[.]'),'match'))
+        handles.data.audiodata.AudioFile  = handles.audiofilesnames{i}; 
+    end
+end
+
+
+[y,Fs] = audioread( strcat(handles.data.settings.audiofolder,filesep, handles.data.audiodata.AudioFile));   
+handles.data.audiodata.samples = y;
+info = audioinfo(handles.data.audiodata.AudioFile);
+handles.data.audiodata.duration = info.Duration;
+handles.data.audiodata.sample_rate = info.SampleRate;
+
+windowsize = round(handles.data.audiodata.sample_rate * 0.0032);
+noverlap = round(handles.data.audiodata.sample_rate * 0.0028);
+nfft = round(handles.data.audiodata.sample_rate * 0.0032);   
+
+tag_column_exists = strcmp('Tag',handles.data.calls.Properties.VariableNames);
+if  ~tag_column_exists
+    handles.data.calls.Tag =  [1:size(handles.data.calls,1)]';
+end
 handles.data.currentcall=1;
+handles.data.current_call_tag = 1;
+handles.data.current_call_valid = true;
+
+handles.data.windowposition = 1;
 
 
 cla(handles.axes7);
-cla(handles.axes5);
+cla(handles.detectionAxes);
 cla(handles.axes1);
+cla(handles.spectogramWindow);
 cla(handles.axes4);
 cla(handles.axes3);
 %% Create plots for update_fig to update
@@ -41,17 +72,31 @@ set(handles.axes7,'XTick',[]);
 set(handles.axes7,'YTick',[]);
 handles.ContourLine = line(handles.axes7,[1,5],[1,5],'LineStyle','--','Color','y');
 
-% Spectrogram
+% Focus spectogram
 handles.spect = imagesc([],[],handles.background,'Parent', handles.axes1);
 cb=colorbar(handles.axes1);
 cb.Label.String = 'Amplitude';
 cb.Color = [1 1 1];
 cb.FontSize = 12;
 ylabel(handles.axes1,'Frequency (kHz)','Color','w');
-xlabel(handles.axes1,'Time (s)','Color','w');
+%xlabel(handles.axes1,'Time (s)','Color','w');
 set(handles.axes1,'Color',[.1 .1 .1]);
 handles.box=rectangle('Position',[1 1 1 1],'Curvature',0.2,'EdgeColor','g',...
     'LineWidth',3,'Parent', handles.axes1);
+
+% Epoch spectogram
+handles.epochSpect = imagesc([],[],handles.background,'Parent', handles.spectogramWindow);
+cb=colorbar(handles.spectogramWindow);
+cb.Label.String = 'Amplitude';
+cb.Color = [1 1 1];
+cb.FontSize = 12;
+ylabel(handles.spectogramWindow,'Frequency (kHz)','Color','w');
+xlabel(handles.spectogramWindow,'Time (s)','Color','w');
+set(handles.spectogramWindow,'Color',[.1 .1 .1]);
+set(handles.spectogramWindow,'Visible', 'on');
+set(handles.epochSpect,'Visible', 'on');
+set(handles.epochSpect,'ButtonDownFcn',@epoch_window_Callback);
+
 
 % Filtered image
 handles.filtered_image_plot = imagesc([],'Parent', handles.axes4);
@@ -62,29 +107,45 @@ set(handles.axes4,'XTick',[]);
 set(handles.axes4,'YTick',[]);
 
 
+%Make the top scroll button visible
+set(handles.topRightButton, 'Visible', 'on');
+set(handles.topLeftButton, 'Visible', 'on');
+
+guidata(hObject,handles);
+handles = guidata(hObject);
+
+
+
 % Plot Call Position
-CallTime = handles.data.calls.Box(:,1);
-
-line([0 max(CallTime)],[0 0],'LineWidth',1,'Color','w','Parent', handles.axes5);
-line([0 max(CallTime)],[1 1],'LineWidth',1,'Color','w','Parent', handles.axes5);
-set(handles.axes5,'XLim',[0 max(CallTime)]);
-set(handles.axes5,'YLim',[0 1]);
-
-set(handles.axes5,'Color',[.1 .1 .1],'YColor',[.1 .1 .1],'XColor',[.1 .1 .1],'Box','off','Clim',[0 1]);
-set(handles.axes5,'YTickLabel',[]);
-set(handles.axes5,'XTickLabel',[]);
-set(handles.axes5,'XTick',unique(sort(CallTime)));
-set(handles.axes5,'YTick',[]);
-handles.axes5.XAxis.Color = 'w';
-handles.axes5.XAxis.TickLength = [0.035 1];
-
-% Call position
-handles.CurrentCallLinePosition = line([CallTime(1) CallTime(1)],[0 1],'LineWidth',3,'Color','g','Parent', handles.axes5);
-handles.CurrentCallLineLext= text((CallTime(1)),1.2,[num2str(1,'%.1f') ' s'],'Color','W', 'HorizontalAlignment', 'center','Parent',handles.axes5);
+render_call_position(hObject,handles,true);
 
 colormap(handles.axes1,handles.data.cmap);
 colormap(handles.axes4,handles.data.cmap);
-
 close(h);
-update_fig(hObject, eventdata, handles);
+
+callPositionAxesXLim = xlim(handles.detectionAxes);
+callPositionAxesXLim(1) = 0;
+callPositionAxesXLim(2) = handles.data.audiodata.duration;
+xlim(handles.detectionAxes,callPositionAxesXLim);
+handles.currentWindowRectangle = rectangle(handles.detectionAxes,'Position',[0 0 0 0]);
+guidata(hObject,handles);
+handles = guidata(hObject);
+
+handles.current_focus_position = [];
+
+
 guidata(hObject, handles);
+handles = guidata(hObject);
+
+updateWindowPosition(hObject,handles);
+
+popupmenuColorMap_Callback(hObject, eventdata, handles);
+focusWindowSizePopup_Callback(hObject, eventdata, handles);
+epochWindowSizePopup_Callback(hObject, eventdata, handles);
+
+
+
+
+update_fig(hObject, eventdata, handles);
+
+

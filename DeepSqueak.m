@@ -1,3 +1,4 @@
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DeepSqueak 1.0                                                          %
 % Copyright (c) 2018 Kevin Coffey & Russell Marx                          %
@@ -13,7 +14,10 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%Altered 27.9 for call screening by rciszek
+
 function varargout = DeepSqueak(varargin)
+set(groot,'defaultFigureVisible','on');
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
@@ -65,8 +69,18 @@ disp '  '
 % Set Handles
 hFig = hObject;
 handles.hFig=hFig;
+
+% Fullscreen
+warning ('off','all');
+pause(0.00001);
+frame_h = get(handle(gcf),'JavaFrame');
+set(frame_h,'Maximized',1);
+
+
 % Create a class to hold the data
 squeakfolder = fileparts(mfilename('fullpath'));
+
+
 
 % Add to MATLAB path and check for toolboxes
 if ~isdeployed
@@ -124,7 +138,7 @@ try
     txt = strsplit(txt);
     changes = find(contains(txt,'##'),1); % Get the values after the bold heading
     handles.DSVersion = txt{changes+1};
-    disp(['DeepSqueak version ' handles.DSVersion]);
+    disp(['DeepSqueak Screener, base DeepSqueak version ' handles.DSVersion]);
     fclose(fid);
 catch
     handles.DSVersion = '?';
@@ -145,6 +159,15 @@ try
 end
 
 handles.spect = imagesc(1,1,1,'Parent', handles.axes1);
+handles.epochSpect = imagesc(1,1,1,'Parent', handles.spectogramWindow);
+
+
+
+
+set(handles.spectogramWindow,'Visible', 'off');
+set(handles.epochSpect,'Visible', 'off');
+set(handles.topRightButton, 'Visible', 'off');
+set(handles.topLeftButton, 'Visible', 'off');
 
 if ~(exist(fullfile(handles.data.squeakfolder,'Background.png'), 'file')==2)
     disp('Background image not found')
@@ -174,26 +197,29 @@ set(handles.TonalitySlider,'Value',handles.data.settings.EntropyThreshold);
 guidata(hObject, handles);
 
 % Make the other figures black
-set(handles.axes4,'Color',[0 0 0],'YColor',[1 1 1],'XColor',[1 1 1],'Box','off','Clim',[0,1]);
+set(handles.axes4,'Color',[0.1 0.1 0.1],'YColor',[1 1 1],'XColor',[1 1 1],'Box','off','Clim',[0,1]);
 set(handles.axes4,'XTickLabel',[]);
 set(handles.axes4,'XTick',[]);
 set(handles.axes4,'YTick',[]);
 
-set(handles.axes7,'Color',[0 0 0],'YColor',[1 1 1],'XColor',[1 1 1],'Box','off','Clim',[0,1]);
+set(handles.axes7,'Color',[0.1 0.1 0.1],'YColor',[1 1 1],'XColor',[1 1 1],'Box','off','Clim',[0,1]);
 set(handles.axes7,'XTickLabel',[]);
 set(handles.axes7,'XTick',[]);
 set(handles.axes7,'YTick',[]);
 
-set(handles.axes3,'Color',[0 0 0],'YColor',[1 1 1],'XColor',[1 1 1],'Box','off','Clim',[0,1]);
+set(handles.axes3,'Color',[0.1 0.1 0.1],'YColor',[1 1 1],'XColor',[1 1 1],'Box','off','Clim',[0,1]);
 set(handles.axes3,'XTickLabel',[]);
 set(handles.axes3,'XTick',[]);
 set(handles.axes3,'YTick',[]);
+
+set(handles.spectogramWindow,'Parent',handles.hFig);
+
 
 
 
 
 function varargout = DeepSqueak_OutputFcn(hObject, eventdata, handles)
-
+shg;
 varargout{1} = handles.output;
 
 % --- Executes on button press in PlayCall.
@@ -214,22 +240,42 @@ paddedsound = [zeros(3125,1); audio; zeros(3125,1)];
 audiostart = handles.data.calls.RelBox(handles.data.currentcall, 1) * handles.data.calls.Rate(handles.data.currentcall);
 audiolength = handles.data.calls.RelBox(handles.data.currentcall, 3) * handles.data.calls.Rate(handles.data.currentcall);
 soundsc(paddedsound(round(audiostart:audiostart+audiolength + 6249)),playbackRate);
+
+
+%Set the default sizes for epoch and focus windows
+handles.data.settings.focus_window_size = 0.5;
+handles.data.settings.windowSize = 2;
+
 guidata(hObject, handles);
 
 % --- Executes on button press in NextCall.
 function NextCall_Callback(hObject, eventdata, handles)
-if handles.data.currentcall < height(handles.data.calls) % If not the last call
+if handles.data.currentcall(1) < height(handles.data.calls) % If not the last call
     handles.data.currentcall=handles.data.currentcall+1;
+    handles.data.current_call_valid = true;
+    handles.data.current_call_tag = num2str(handles.data.calls{handles.data.currentcall,'Tag'});
+    handles = guidata(hObject);    
+    updateWindowPosition(hObject,handles);
+    handles = guidata(hObject);
+    handles.current_focus_position = [];    
     update_fig(hObject, eventdata, handles);
+    
+
+    
 end
 % guidata(hObject, handles);
 
 % --- Executes on button press in PreviousCall.
 function PreviousCall_Callback(hObject, eventdata, handles)
-if handles.data.currentcall>1 % If not the first call
+if handles.data.currentcall(1) >1 % If not the first call
     handles.data.currentcall=handles.data.currentcall-1;
+    handles.data.current_call_valid = true;
+    handles.data.current_call_tag = num2str(handles.data.calls{handles.data.currentcall,'Tag'});    
+    handles.current_focus_position = [];
+    updateWindowPosition(hObject,handles);
     update_fig(hObject, eventdata, handles);
 end
+
 
 % --- Executes on selection change in Networks Folder Pop up.
 function neuralnetworkspopup_Callback(hObject, eventdata, handles)
@@ -264,31 +310,49 @@ end
 % --- Executes on button press in AcceptCall.
 function AcceptCall_Callback(hObject, eventdata, handles)
 handles.data.calls.Accept(handles.data.currentcall) = 1;
-update_fig(hObject, eventdata, handles);
-guidata(hObject, handles);
+NextCall_Callback(hObject, eventdata, handles)
+
 
 % --- Executes on button press in RejectCall.
 function RejectCall_Callback(hObject, eventdata, handles)
 handles.data.calls.Accept(handles.data.currentcall) = 0;
-update_fig(hObject, eventdata, handles);
-guidata(hObject, handles);
+NextCall_Callback(hObject, eventdata, handles)
+
 
 % --- Executes during MAIN AXES CREATION
 function axes1_CreateFcn(hObject, eventdata, handles)
 
-% --- Executes on slider movement.
-function slider1_Callback(hObject, eventdata, handles)
-handles.data.currentcall = ceil(get(hObject,'Value')*height(handles.data.calls));
-if handles.data.currentcall < 1
-    handles.data.currentcall = 1;
-end
-update_fig(hObject, eventdata, handles);
 
-% --- Executes during slider creation, after setting all properties.
-function slider1_CreateFcn(hObject, eventdata, handles)
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
+function slide_focus(focus_offset, hObject, eventdata, handles)
+
+    if isempty(handles.current_focus_position)
+        handles.current_focus_position = handles.data.windowposition;
+    end
+
+    focus_position = min(handles.current_focus_position(1) + focus_offset, handles.data.audiodata.duration);
+    focus_position = max(handles.current_focus_position(1) + focus_offset, 0);
+    
+
+    if focus_position >= handles.data.windowposition + handles.data.settings.windowSize
+        forwardButton_Callback(hObject, eventdata, handles);
+    else
+        if focus_position < handles.data.windowposition
+            backwardButton_Callback(hObject, eventdata, handles);   
+        end 
+        
+        calls = list_calls_within_window(handles, [focus_position,focus_position + handles.data.settings.focus_window_size]);
+    
+        if ~isempty(calls)
+           handles.data.currentcall = calls(1);
+
+           handles.data.current_call_valid = true;
+           handles.data.current_call_tag = num2str(handles.data.calls{handles.data.currentcall,'Tag'});
+        end
+        
+        handles.current_focus_position =  [focus_position, 0,  handles.data.settings.focus_window_size,0];
+        guidata(hObject,handles);
+        update_fig(hObject, eventdata, handles);
+    end
 
 function score_Callback(hObject, eventdata, handles)
 
@@ -311,7 +375,19 @@ function Untitled_2_Callback(hObject, eventdata, handles)
 
 % --- Executes on key press with focus on figure1 or any of its controls.
 function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
+
+if strcmp(eventdata.Key,'uparrow')
+    slide_focus(handles.data.settings.focus_window_size, hObject, eventdata, handles)
+end
+if strcmp(eventdata.Key,'downarrow')
+    slide_focus(handles.data.settings.focus_window_size*(-1), hObject, eventdata, handles)
+end
+if strcmp(eventdata.Key,'space')
+    forwardButton_Callback(hObject, eventdata, handles);
+end
+
 switch eventdata.Character
+   
     case 'p'
         PlayCall_Callback(hObject, eventdata, handles)
     case {'e', char(29)} % char(29) is right arrow key
@@ -335,50 +411,7 @@ end
 
 function figure1_KeyPressFcn(hObject, eventdata, handles)
 
-% --- Executes on selection change in popupmenuColorMap.
-function popupmenuColorMap_Callback(hObject, eventdata, handles)
-handles.data.cmapName=get(hObject,'String');
-handles.data.cmapName=handles.data.cmapName(get(hObject,'Value'));
-switch handles.data.cmapName{1,1}
-    case 'magma'
-        handles.data.cmap=magma;
-    case 'inferno'
-        handles.data.cmap=inferno;
-    case 'viridis'
-        handles.data.cmap=viridis;
-    case 'plasma'
-        handles.data.cmap=plasma;
-    case 'hot'
-        handles.data.cmap=hot;
-    case 'cubehelix'
-        handles.data.cmap=cubehelix;
-    case 'parula'
-        handles.data.cmap=parula;
-    case 'jet'
-        handles.data.cmap=jet;
-    case 'hsv'
-        handles.data.cmap=hsv;
-    case 'cool'
-        handles.data.cmap=cool;
-    case 'spring'
-        handles.data.cmap=spring;
-    case 'summer'
-        handles.data.cmap=summer;
-    case 'autumn'
-        handles.data.cmap=autumn;
-    case 'winter'
-        handles.data.cmap=winter;
-    case 'gray'
-        handles.data.cmap=gray;
-    case 'bone'
-        handles.data.cmap=bone;
-    case 'copper'
-        handles.data.cmap=copper;
-    case 'pink'
-        handles.data.cmap=pink;
-end
-colormap(handles.axes1,handles.data.cmap);
-colormap(handles.axes4,handles.data.cmap);
+
 
 % --- Executes during object creation, after setting all properties.
 function popupmenuColorMap_CreateFcn(hObject, eventdata, handles)
@@ -394,16 +427,45 @@ end
 
 % --- Executes on button press in rectangle.
 function rectangle_Callback(hObject, eventdata, handles)
-% Re-draw the box
-fcn = makeConstrainToRectFcn('imrect',[handles.spect.XData(1),handles.spect.XData(end)],[handles.spect.YData(1),handles.spect.YData(end)]); %constrain to edges of window
-newbox=imrect(handles.axes1,'PositionConstraintFcn',fcn);
-handles.pos=getPosition(newbox);
-difference = handles.pos - handles.data.calls{handles.data.currentcall, 'RelBox'};
-handles.data.calls{handles.data.currentcall, 'RelBox'} = difference + handles.data.calls{handles.data.currentcall, 'RelBox'};
-handles.data.calls{handles.data.currentcall, 'Box'} = difference + handles.data.calls{handles.data.currentcall, 'Box'};
-delete(newbox);
-update_fig(hObject, eventdata, handles);
+current_box = drawrectangle( 'Parent',handles.axes1,...
+                            'FaceAlpha',0,...
+                            'LineWidth',1 );
 
+   
+    
+audio_start = handles.data.audiodata.sample_rate*current_box.Position(1);
+audio_stop = handles.data.audiodata.sample_rate*(current_box.Position(1) + current_box.Position(3));
+ 
+audio = handles.data.audiodata.samples(audio_start:audio_stop);
+new_tag = max(handles.data.calls.Tag) + 1;
+new_box = {handles.data.audiodata.sample_rate, current_box.Position, [0,0,0,0], 0, audio,0,0,1,new_tag };
+new_box = table();
+new_box.Rate = handles.data.audiodata.sample_rate;
+new_box.Box = current_box.Position;
+new_box.RelBox = calculateRelativeBox(current_box.Position, handles.axes1);
+new_box.Score = 1;
+new_box.Audio = {int16(audio)};
+new_box.Type = categorical({'USV'});
+new_box.Power = 0;
+new_box.Accept = 1;
+new_box.Tag = new_tag;
+
+handles.data.calls = [handles.data.calls;new_box];
+
+
+set(current_box,'Tag',num2str(new_tag)); 
+set(current_box,'Color',[0 1 0]);
+
+
+%Now delete the roi and render the figure. The roi will be rendered along
+%with the existing boxes.
+handles.data.current_call_valid = true;
+SortCalls(hObject, eventdata, handles, 'time', 0, -1);
+guidata(hObject,handles);
+delete(current_box)
+update_fig(hObject, eventdata, handles)
+
+guidata(hObject,handles);
 % --------------------------------------------------------------------
 function select_audio_Callback(hObject, eventdata, handles)
 % Find audio in folder
@@ -466,26 +528,6 @@ guidata(hObject, handles);
 function export_Callback(hObject, eventdata, handles)
 
 function training_Callback(hObject, eventdata, handles)
-
-function SortCalls(hObject, eventdata, handles, type)
-% Sort current file by score
-h = waitbar(0,'Sorting...');
-switch type
-    case 'score'
-        [~,idx] = sort(handles.data.calls.Score);
-    case 'time'
-        [~,idx] = sortrows(handles.data.calls.Box, 1);
-    case 'duration'
-        [~,idx] = sortrows(handles.data.calls.Box, 4);
-    case 'frequency'
-        [~,idx] = sort(sum(handles.data.calls.Box(:, [2, 2, 4]), 2));
-end
-handles.data.calls = handles.data.calls(idx, :);
-handles.data.currentcall=1;
-
-update_fig(hObject, eventdata, handles);
-close(h);
-guidata(hObject, handles);
 
 % --------------------------------------------------------------------
 function customlabels_Callback(hObject, eventdata, handles)
@@ -553,7 +595,7 @@ if ~isempty(LowFreq) && ~isempty(HighFreq) && ~isempty(DisplayTimePadding)
     if HighFreq > LowFreq
         handles.data.settings.LowFreq = LowFreq;
         handles.data.settings.HighFreq = HighFreq;
-        handles.data.settings.DisplayTimePadding = DisplayTimePadding;
+        %handles.data.settings.DisplayTimePadding = DisplayTimePadding;
         handles.data.saveSettings();
         update_folders(hObject, eventdata, handles);
         update_fig(hObject, eventdata, handles);
@@ -722,3 +764,137 @@ web('https://github.com/DrCoffey/DeepSqueak/issues','-browser');
 % --- Executes on slider movement.
 function optimization_slider_Callback(hObject, eventdata, handles)
 hObject.Value = round(hObject.Value);
+
+
+% --- Executes on button press in backwardButton.
+function backwardButton_Callback(hObject, eventdata, handles)
+ 
+    handles.data.windowposition = max(0, handles.data.windowposition - handles.data.settings.windowSize);
+    guidata(hObject, handles);     
+    update_position(hObject, eventdata, handles);
+ 
+
+% --- Executes on button press in forwardButton.
+function forwardButton_Callback(hObject, eventdata, handles)
+    
+    handles.data.windowposition = min(handles.data.audiodata.duration, handles.data.windowposition + handles.data.settings.windowSize);  
+    guidata(hObject, handles);
+    update_position(hObject, eventdata, handles);
+
+    
+function update_position(hObject, eventdata, handles)
+
+    calls = list_calls_within_window(handles, [handles.data.windowposition, handles.data.windowposition + handles.data.settings.windowSize]);
+    
+    if ~isempty(calls)
+       handles.data.currentcall = calls(1);
+       handles.data.current_call_valid = true;
+       handles.data.current_call_tag = num2str(handles.data.calls{handles.data.currentcall,'Tag'});
+       handles.current_focus_position = [];       
+   
+       handles.current_focus_position =  [handles.data.windowposition, 0,  handles.data.settings.focus_window_size,0];   
+
+    end
+    
+    update_fig(hObject, eventdata, handles);
+    guidata(hObject, handles);
+
+
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+% if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+%     set(hObject,'BackgroundColor','white');
+% end
+
+% --- Executes during object creation, after setting all properties.
+function epochWindowSizePopup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to epochWindowSizePopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+padding = cellstr(get(hObject,'String')); 
+seconds = regexp(padding{get(hObject,'Value')},'([\d*.])*','match');
+seconds = str2num(seconds{1});
+handles.data.settings.windowSize = seconds;
+guidata(hObject, handles);
+
+
+% --- Executes on mouse press over axes background.
+function spectogramWindow_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to spectogramWindow (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on selection change in spectogramScalePopup.
+function spectogramScalePopup_Callback(hObject, eventdata, handles)
+% hObject    handle to spectogramScalePopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns spectogramScalePopup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from spectogramScalePopup
+    update_fig(hObject, [], handles);
+
+% --- Executes during object creation, after setting all properties.
+function spectogramScalePopup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to spectogramScalePopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function SpectogramMax_Callback(hObject, eventdata, handles)
+% hObject    handle to SpectogramMax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    set(hObject, 'String', num2str(get_spectogram_max(hObject, handles))); 
+    guidata(hObject,handles);
+    update_fig(hObject, [], handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function SpectogramMax_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SpectogramMax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function focusWindowSizePopup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to focusWindowSizePopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+padding = cellstr(get(hObject,'String')); 
+seconds = regexp(padding{get(hObject,'Value')},'([\d*.])*','match');
+seconds = str2double(seconds{1});
+handles.data.settings.focus_window_size = seconds;
+guidata(hObject, handles);
+
+
+% --- Executes on button press in topLeftButton.
+function topLeftButton_Callback(hObject, eventdata, handles)
+% hObject    handle to topLeftButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    slide_focus(handles.data.settings.focus_window_size*(-1), hObject, eventdata, handles)
+
+% --- Executes on button press in topRightButton.
+function topRightButton_Callback(hObject, eventdata, handles)
+% hObject    handle to topRightButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    slide_focus(handles.data.settings.focus_window_size*(1), hObject, eventdata, handles)

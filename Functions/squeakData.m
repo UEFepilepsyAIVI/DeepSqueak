@@ -2,10 +2,14 @@ classdef squeakData < handle
     properties
         calls
         currentcall = 1
+        current_call_tag = '1'
+        current_call_valid = true
+        windowposition = 1;
         cmap = 'inferno'
         cmapName = {'inferno'}
         settings = struct()
         squeakfolder
+        audiodata
         % Keyboard shortcuts for labelling calls
         labelShortcuts = {'1','2','3','4','5','6','7','8','9','0','-','='}
     end
@@ -29,6 +33,7 @@ classdef squeakData < handle
                 obj.settings.EntropyThreshold = 0.3;
                 obj.settings.labels = {'FF','FM','Trill','Split',' ',' ',' ',' ',' ',' '};
                 obj.settings.DisplayTimePadding = 0;
+                obj.settings.windowSize = 1;
                 disp('Settings file not found. Create a new one...')
                 saveSettings(obj)
             end
