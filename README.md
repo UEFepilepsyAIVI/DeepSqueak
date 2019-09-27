@@ -1,6 +1,6 @@
 # DeepSqueak Screener
 
-Fork of [DeepSqueak](https://github.com/DrCoffey/DeepSqueak)(Coffey, Marx, Neumaier,2019), with additional functionalities for  screening of whole records for false negatives.
+> Fork of [DeepSqueak](https://github.com/DrCoffey/DeepSqueak)(Coffey, Marx, Neumaier, 2019), with additional functionalities for  screening of whole records for false negatives.
 
 ![screenshot](https://i.postimg.cc/MKcSQqGr/Deep-Squeak-screener.png)
 
@@ -11,3 +11,6 @@ Fork of [DeepSqueak](https://github.com/DrCoffey/DeepSqueak)(Coffey, Marx, Neuma
 - Black & white color map.
 - GUI tweaks.
 
+## Credits: 
+**Original DeepSqueak**: Coffey, K., Marx, R., & Neumaier, J.<br>
+**Screener**: Lara-Valderrábano, L. and Ciszek, R.
