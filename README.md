@@ -1,6 +1,6 @@
 # DeepSqueak Screener
 
-Fork of [DeepSqueak](https://github.com/DrCoffey/DeepSqueak)(Coffey, Marx, Neumaier,2019), with additional functionalities for call screening from whole records for false negatives.
+Fork of [DeepSqueak](https://github.com/DrCoffey/DeepSqueak)(Coffey, Marx, Neumaier,2019), with additional functionalities for  screening of whole records for false negatives.
 
 ## Additions
 - Free backward and forward movement along the record.
