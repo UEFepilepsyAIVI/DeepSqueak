@@ -23,7 +23,7 @@ I = flipud(I(Ymin:Ymax,:));
 Clim = get(handles.axes1,'Clim');
 I = mat2gray(I,Clim);
 fullFileName = fullfile(PathName, FileName); % Add Figure Path
-cmap = feval(handles.data.cmapName{1},256);
+cmap = handles.data.cmap;
 I2 = gray2ind(I,256);
 imwrite(I2,cmap,fullFileName,'png','BitDepth',8); % Re-change it to colored one 
 

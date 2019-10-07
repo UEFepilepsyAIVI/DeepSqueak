@@ -1,4 +1,5 @@
 function [Calls,audiodata] = loadCallfile(filename)
+audiodata = [];
 load(filename, 'Calls');
 load(filename, 'audiodata');
 

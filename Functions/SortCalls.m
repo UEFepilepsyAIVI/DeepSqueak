@@ -34,12 +34,15 @@ end
 handles.data.calls = handles.data.calls(idx, :);
 handles.data.calls.Tag =[1:size(handles.data.calls,1)]';
 guidata(hObject, handles);
+updateWindowPosition(hObject,handles);
 update_fig(hObject, eventdata, handles);
 
 if show_waitbar
     close(h);
 end
-set(handles.hFig, 'pointer', 'arrow')
+
+set(handles.hFig, 'pointer', 'arrow');
+
 guidata(hObject, handles);
 
 end

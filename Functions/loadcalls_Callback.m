@@ -12,8 +12,12 @@ handles.data.calls = [];
 handles.data.audiodata = [];
 [handles.data.calls, handles.data.audiodata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
 
-audiofile_name = regexp(handles.current_detection_file, '(\s+)(?=[\w.-]+\s[\w.-]+\s[\w.-]+$)','split');
+audiofile_name = regexp(handles.current_detection_file, '(\s+)(?=[\w.-]+[\s]+[\w.-]+[\s]+[\w.-]+$)','split');
 audiofile_name = audiofile_name{1};
+
+%For compatibility with the save format of original DeepSqueak, the
+%calls are resaved with the audiodata if necessary.
+update_audiodata = isempty(handles.data.audiodata);
 
 for i=1:length(handles.audiofilesnames) 
     if ~isempty(regexp(handles.audiofilesnames{i}, strcat('^',audiofile_name, '[.]'),'match'))
@@ -27,6 +31,11 @@ handles.data.audiodata.samples = y;
 info = audioinfo(handles.data.audiodata.AudioFile);
 handles.data.audiodata.duration = info.Duration;
 handles.data.audiodata.sample_rate = info.SampleRate;
+
+if update_audiodata
+    audiodata = handles.data.audiodata;
+    save(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file),'audiodata','-append')
+end
 
 windowsize = round(handles.data.audiodata.sample_rate * 0.0032);
 noverlap = round(handles.data.audiodata.sample_rate * 0.0028);

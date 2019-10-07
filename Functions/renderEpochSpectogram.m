@@ -2,7 +2,6 @@ function  renderEpochSpectogram(hObject, handles)
     %Plot current spectogram window
     axes(handles.spectogramWindow);
 
-    % Recalculated spectogram. Bit less than twice as slow on 10s window.
     windowsize = round(handles.data.audiodata.sample_rate * 0.01);
     noverlap = round(handles.data.audiodata.sample_rate * 0.005);
     nfft = round(handles.data.audiodata.sample_rate * 0.1);
