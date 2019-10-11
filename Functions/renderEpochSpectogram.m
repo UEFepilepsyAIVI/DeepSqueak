@@ -11,6 +11,9 @@ function  renderEpochSpectogram(hObject, handles)
     [zoomed_s, zoomed_f, zoomed_t] = spectrogram(audio,windowsize,noverlap,nfft,handles.data.audiodata.sample_rate,'yaxis');
     
     upper_freq = find(zoomed_f>=handles.data.settings.HighFreq*1000,1);
+    if isempty(upper_freq)
+        upper_freq = length(zoomed_f);
+    end
     lower_freq = find(zoomed_f>=handles.data.settings.LowFreq*1000,1);
 
     % Extract the region within the frequency range
