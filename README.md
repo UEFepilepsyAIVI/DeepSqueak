@@ -8,7 +8,7 @@
 - Free backward and forward movement along the record.
 - Additional spectogram with a larger time window for call contextualization.
 - Single Click on lower spectrogram to jump to that position.
-- Single Click on the upper bar to move position in audio file.
+- Single Click a location on the scroll bar in map mode = upper spectrogram jumps to that location in the file.
 - Up Arrow = next timepoint in spectrogram, Down Arrow = previous timepoint in spectrogram.
 - Shift + Click on detection to reject it.
 - Select, move, and modify ROIs of detected calls.
