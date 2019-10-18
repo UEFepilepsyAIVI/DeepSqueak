@@ -29,7 +29,7 @@ for j = 1:length(fname) % Do this for each file
         
         if includereject || Calls.Accept(i)
             % Get spectrogram data
-            [I,windowsize,noverlap,nfft,rate,box] = CreateSpectrogram(Calls(i, :));
+             [I,windowsize,noverlap,nfft,rate,box,window_start] = CreateFocusSpectrogram(Calls(i, :),handles,true);
             % Calculate statistics
             stats = CalculateStats(I,windowsize,noverlap,nfft,rate,box,handles.data.settings.EntropyThreshold,handles.data.settings.AmplitudeThreshold);
             
