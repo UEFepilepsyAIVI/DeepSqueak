@@ -14,7 +14,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%Altered 27.9 for call auditing by rciszek
+%Altered 27.9 for call screening by rciszek
 
 function varargout = DeepSqueak(varargin)
 set(groot,'defaultFigureVisible','on');
@@ -138,7 +138,7 @@ try
     txt = strsplit(txt);
     changes = find(contains(txt,'##'),1); % Get the values after the bold heading
     handles.DSVersion = txt{changes+1};
-    disp(['DeepSqueak Audit, base DeepSqueak version ' handles.DSVersion]);
+    disp(['DeepSqueak Screener, base DeepSqueak version ' handles.DSVersion]);
     fclose(fid);
 catch
     handles.DSVersion = '?';

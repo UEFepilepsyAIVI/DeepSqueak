@@ -21,7 +21,7 @@ perplexity = str2double(clusterParameters{6});
 NumberOfCalls = str2double(clusterParameters{7});
 
 % Get the data
-[a, clustAssign] = CreateClusteringData(handles.data, 1);
+[a, clustAssign] = CreateClusteringData(handles, 1);
 
 if NumberOfCalls == 0
     NumberOfCalls = size(a,1);

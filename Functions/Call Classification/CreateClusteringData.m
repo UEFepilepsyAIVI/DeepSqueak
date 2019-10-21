@@ -1,9 +1,10 @@
 %% This function prepares data for clustering
 
-function [ClusteringData, clustAssign]= CreateClusteringData(data, forClustering)
+function [ClusteringData, clustAssign]= CreateClusteringData(handles, forClustering)
 % For each file selected, create a cell array with the image, and contour
 % of calls where Calls.Accept == 1
 
+data = handles.data;
 cd(data.squeakfolder);
 if forClustering
     prompt = 'Select detection file(s) for clustering AND/OR extracted contours';
@@ -49,7 +50,7 @@ for j = 1:length(fileName)
             
             call = file.Calls(i,:);
             
-            [I,wind,noverlap,nfft,rate,box] = CreateSpectrogram(call);
+            [I,wind,noverlap,nfft,rate,box,~] = CreateFocusSpectrogram(call,handles,true);
             im = mat2gray(flipud(I),[0 max(max(I))/4]); % Set max brightness to 1/4 of max
             
             if forClustering
