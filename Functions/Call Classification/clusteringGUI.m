@@ -1,10 +1,10 @@
 function [NewclusterName, NewRejected, NewFinished] = clusteringGUI(clustAssign1,ClusteringData1,JustLooking)
 % I know I shouldn't use global variables, but they are so convenient, and I was in a hurry.
 clearvars -global
-global k clustAssign clusters rejected ClusteringData minfreq d ha ColorData txtbox totalCount count clusterName handle_image page pagenumber finished
+global k clustAssign clusters rejected ClusteringData minfreq d ha ColorData txtbox totalCount count clusterName handle_image page pagenumber finished thumbnail_size
 clustAssign = clustAssign1;
 ClusteringData = ClusteringData1;
-
+thumbnail_size = [60*2 100*2];
 rejected = zeros(1,length(clustAssign));
 
 minfreq = floor(min([ClusteringData{:,2}]))-1;
@@ -142,13 +142,9 @@ end
 pos = flipud(pos);
 for i=1:i*j
     if i <= length(clustIndex) - (page - 1)*length(ha)
-        
-        im = imresize(ClusteringData{clustIndex(i),1},[60 100]);
-        freqdata = round(linspace(ClusteringData{clustIndex(i),2} + ClusteringData{clustIndex(i),9},ClusteringData{clustIndex(i),2},60));
-        colorIM(:,:,1) =  single(im).*.0039.*ColorData(freqdata - minfreq,1);
-        colorIM(:,:,2) =  single(im).*.0039.*ColorData(freqdata - minfreq,2);
-        colorIM(:,:,3) =  single(im).*.0039.*ColorData(freqdata - minfreq,3);
-        
+
+       
+        colorIM = create_thumbnail(ClusteringData,clustIndex,i,thumbnail_size,i,minfreq,ColorData);     
         ha(i) = axes(d,'Units','Normalized','Position',[pos(i,2),pos(i,1),.13,.09]);
         handle_image(i) = image(colorIM + .5 .* rejected(clustIndex(i)),'parent',ha(i));
         set(handle_image(i), 'ButtonDownFcn',{@clicked,clustIndex(i),i});
@@ -182,14 +178,9 @@ clearvars -global
 
 
 
-    function txtbox_Callback(hObject, eventdata, handles)
-        clusterName(k) = get(hObject,'String');
-    end
-
-
-
-
-
+function txtbox_Callback(hObject, eventdata, handles)
+    clusterName(k) = get(hObject,'String');
+end
 
 
 
@@ -208,7 +199,7 @@ delete(gcf)
 end
 
 function plotimages
-global k clustAssign clusters rejected ClusteringData minfreq d ha ColorData handle_image page
+global k clustAssign clusters rejected ClusteringData minfreq d ha ColorData handle_image page thumbnail_size
 clustIndex = find(clustAssign==clusters(k));
 
 
@@ -217,11 +208,8 @@ for i=1:length(ha)
         set(ha(i),'Visible','off')
         set(get(ha(i),'children'),'Visible','on');
         callID = i + (page - 1)*length(ha);
-        im = imresize(ClusteringData{clustIndex(callID),1},[60 100]);
-        freqdata = round(linspace(ClusteringData{clustIndex(callID),2} + ClusteringData{clustIndex(callID),9},ClusteringData{clustIndex(callID),2},60));
-        colorIM(:,:,1) =  single(im).*.0039.*ColorData(freqdata - minfreq,1);
-        colorIM(:,:,2) =  single(im).*.0039.*ColorData(freqdata - minfreq,2);
-        colorIM(:,:,3) =  single(im).*.0039.*ColorData(freqdata - minfreq,3);
+        colorIM = create_thumbnail(ClusteringData,clustIndex,i,thumbnail_size,callID,minfreq,ColorData);
+
         %
         %     ha(i) = axes(d,'Units','Normalized','Position',[pos(i,2),pos(i,1),.14,.14]);
         %     handle_image(i) = image(colorIM + .5 .* rejected(clustIndex(i)),'parent',ha(i));
@@ -311,4 +299,40 @@ function windowclosed(hObject, eventdata, handles)
 global finished
 finished = 2;
 delete(hObject)
+end
+
+function colorIM = create_thumbnail(ClusteringData,clustIndex,i,thumbnail_size,callID,minfreq,ColorData)
+    im = zeros(thumbnail_size(1),thumbnail_size(2));
+    im(:,:) = 0.1;
+    if size(ClusteringData{clustIndex(i),1},1) < size(ClusteringData{clustIndex(i),1},2)
+        aspect_ratio = size(ClusteringData{clustIndex(i),1},1) / size(ClusteringData{clustIndex(i),1},2);
+        scaled_heigth = round(thumbnail_size(1) * aspect_ratio);
+        offset = round((thumbnail_size(1) - scaled_heigth )/2);
+        resized = imresize(ClusteringData{clustIndex(i),1},[scaled_heigth thumbnail_size(2)]);
+        start_index = offset;
+        end_index = offset+scaled_heigth-1;
+        if offset
+            im(start_index:end_index,:) = resized;  
+        else
+            im = resized;
+        end
+    else 
+        aspect_ratio = size(ClusteringData{clustIndex(i),1},1) / size(ClusteringData{clustIndex(i),1},2);
+        scaled_width = round(thumbnail_size(2) / aspect_ratio);
+        offset = round((thumbnail_size(2) - scaled_width )/2);
+        resized = imresize(ClusteringData{clustIndex(i),1},[thumbnail_size(1) scaled_width]);
+        start_index = max(offset,1);
+        end_index = offset+scaled_width-1;
+        if offset 
+            im(:,start_index:end_index) = resized;  
+        else
+            im = resized;
+        end
+    end       
+    
+    freqdata = round(linspace(ClusteringData{clustIndex(callID),2} + ClusteringData{clustIndex(callID),9},ClusteringData{clustIndex(callID),2},thumbnail_size(1)));
+    colorIM(:,:,1) =  single(im).*.0039.*ColorData(freqdata - minfreq,1);
+    colorIM(:,:,2) =  single(im).*.0039.*ColorData(freqdata - minfreq,2);
+    colorIM(:,:,3) =  single(im).*.0039.*ColorData(freqdata - minfreq,3);    
+
 end

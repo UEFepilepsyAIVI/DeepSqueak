@@ -30,25 +30,28 @@ stats.DeltaTime = [];
 %% For Each File
 for j = 1:length(fileName)
     file = load(fullfile(filePath,fileName{j}));
-    
+     [Calls,audiodata,loaded_ClusteringData] = loadCallfile(fullfile(filePath,fileName{j}));
+    audio_file_path =  strcat(handles.data.settings.audiofolder,filesep, audiodata.AudioFile);
+    [samples, duration,sample_rate] = loadAudioData(audio_file_path);
+     handles.data.audiodata.samples = samples;
+     handles.data.audiodata.duration = duration;
+     handles.data.audiodata.sample_rate = sample_rate;     
+     handles.data.audiodata.AudioFile = audiodata.AudioFile;
     % If the files is extracted contours, rather than a detection file
-    if forClustering && isfield(file,'ClusteringData')
-        ClusteringData = [ClusteringData; file.ClusteringData];
-    elseif isfield(file,'Calls')
+    if forClustering & ~isempty(loaded_ClusteringData)
+        ClusteringData = [ClusteringData; loaded_ClusteringData];
+    elseif ~isempty(Calls)
         
-        % Backwards compatibility with struct format for detection files
-        if isstruct(file.Calls); file.Calls = struct2table(file.Calls, 'AsArray', true); end
-    
         % for each call in the file, calculate stats for clustering
-        for i = 1:height(file.Calls)
-            waitbar(i/height(file.Calls),h,['Loading File ' num2str(j) ' of '  num2str(length(fileName))]);
+        for i = 1:height(Calls)
+            waitbar(i/height(Calls),h,['Loading File ' num2str(j) ' of '  num2str(length(fileName))]);
             
             % Skip if not accepted
-            if ~file.Calls.Accept(i) || ismember(file.Calls.Type(i),'Noise')
+            if ~Calls.Accept(i) || ismember(Calls.Type(i),'Noise')
                 continue
             end
             
-            call = file.Calls(i,:);
+            call = Calls(i,:);
             
             [I,wind,noverlap,nfft,rate,box,~] = CreateFocusSpectrogram(call,handles,true);
             im = mat2gray(flipud(I),[0 max(max(I))/4]); % Set max brightness to 1/4 of max

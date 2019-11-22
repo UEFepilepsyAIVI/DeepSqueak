@@ -25,21 +25,17 @@ for i=1:length(handles.audiofilesnames)
     end
 end
 
+audio_file_path =  strcat(handles.data.settings.audiofolder,filesep, handles.data.audiodata.AudioFile);
+[samples, duration,sample_rate] = loadAudioData(audio_file_path);
 
-[y,Fs] = audioread( strcat(handles.data.settings.audiofolder,filesep, handles.data.audiodata.AudioFile));   
-handles.data.audiodata.samples = y;
-info = audioinfo(handles.data.audiodata.AudioFile);
-handles.data.audiodata.duration = info.Duration;
-handles.data.audiodata.sample_rate = info.SampleRate;
+handles.data.audiodata.samples = samples;
+handles.data.audiodata.duration = duration;
+handles.data.audiodata.sample_rate = sample_rate;
 
 if update_audiodata
     audiodata = handles.data.audiodata;
     save(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file),'audiodata','-append')
 end
-
-windowsize = round(handles.data.audiodata.sample_rate * 0.0032);
-noverlap = round(handles.data.audiodata.sample_rate * 0.0028);
-nfft = round(handles.data.audiodata.sample_rate * 0.0032);   
 
 tag_column_exists = strcmp('Tag',handles.data.calls.Properties.VariableNames);
 if  ~tag_column_exists
