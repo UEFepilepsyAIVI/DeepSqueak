@@ -6,7 +6,10 @@ function  roiMovedCallback(rectangle,evt)
     for i=1:size(handles.data.calls,1)
         if handles.data.calls{i,'Tag'} == str2double(tag)
             handles.data.calls{i,'Box'} = rectangle.Position;
-            handles.data.calls{i,'RelBox'} = calculateRelativeBox(rectangle.Position, handles.axes1);
+            handles.data.calls{i,'RelBox'} = calculateRelativeBox(rectangle.Position, handles.axes1);         
+            WindL=round( ( rectangle.Position(1)-rectangle.Position(3) )* handles.data.audio.samplerate);
+            WindR=round( WindL + 2*rectangle.Position(3) * handles.data.audio.samplerate);
+            handles.data.calls{i, 'Audio'} = mergeAudio(handles.data.audio.samples, [WindL WindR])
         end
     end
     delete(rectangle)

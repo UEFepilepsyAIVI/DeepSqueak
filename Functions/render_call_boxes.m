@@ -37,10 +37,17 @@ function render_call_boxes(current_axes,handles, hObject,roi, fill_heigth)
     end
    guidata(hObject,handles);
    refresh(handles.hFig);
-    c = uicontextmenu;
+   c = uicontextmenu;
 
+   
+   I = find( (handles.data.calls.Box(:,1) >= axis_xlim(1) & handles.data.calls.Box(:,1) < axis_xlim(2)  ) ...
+      | ( handles.data.calls.Box(:,1) + handles.data.calls.Box(:,3)  >= axis_xlim(1) & handles.data.calls.Box(:,1) + handles.data.calls.Box(:,3)  <= axis_xlim(2) )...
+      | ( handles.data.calls.Box(:,1)<=  axis_xlim(1) & handles.data.calls.Box(:,1) + handles.data.calls.Box(:,3) >=  axis_xlim(2) )...
+    );
+       
     % Loop through all calls
-    for i=call_start:call_stop
+    for b=1:length(I)
+        i = I(b);
         current_box = handles.data.calls{i, 'Box'};
         current_tag = num2str(handles.data.calls{i,'Tag'});
         box_y = current_box(2);
@@ -56,6 +63,7 @@ function render_call_boxes(current_axes,handles, hObject,roi, fill_heigth)
             line_width = 0.5;
             box_color = 'r';    
             line_style = '-';
+
             if handles.data.calls.Accept(i)
                 box_color = [0 1 0];  
             end

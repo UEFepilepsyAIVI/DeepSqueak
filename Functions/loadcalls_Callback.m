@@ -1,5 +1,5 @@
 % --- Executes on button press in LOAD CALLS.
-function loadcalls_Callback(hObject, eventdata, handles,call_file_number)
+function loadcalls_Callback(hObject, eventdata, handles)
 h = waitbar(0,'Loading Calls Please wait...');
 update_folders(hObject, eventdata, handles);
 handles = guidata(hObject);
@@ -47,6 +47,7 @@ handles.data.current_call_valid = true;
 
 handles.data.windowposition = 1;
 
+handles.update_position_axes = 0;
 
 cla(handles.axes7);
 cla(handles.detectionAxes);

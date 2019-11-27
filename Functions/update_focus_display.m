@@ -18,10 +18,8 @@ end
 
 set(handles.axes1,'ylim',[handles.data.settings.LowFreq handles.data.settings.HighFreq]);
 
-
 [I_f,windowsize_f,noverlap_f,nfft_f,rate_f,box_f,s_f,fr_f,ti_f,audio_f,AudioRange_f, window_start] = CreateFocusSpectrogram(handles.data.calls(handles.data.currentcall,:),handles,true);
 stats = CalculateStats(I_f,windowsize_f,noverlap_f,nfft_f,rate_f,box_f,handles.data.settings.EntropyThreshold,handles.data.settings.AmplitudeThreshold);
-
 
 handles.data.calls.Power(handles.data.currentcall) = stats.MaxPower;
 

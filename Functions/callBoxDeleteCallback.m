@@ -3,7 +3,7 @@ function callBoxDeleteCallback(rectangle,evt)
     handles = guidata(hObject);
     clicked_tag = get(rectangle, 'Tag');
     
-    if( strcmp(evt.SelectionType,'middle') | strcmp(evt.SelectionType,'shift') )
+    if( strcmp(evt.SelectionType,'right') | strcmp(evt.SelectionType,'middle') | strcmp(evt.SelectionType,'shift') )
         for i=1:size(handles.data.calls,1)
 
              current_tag = num2str(handles.data.calls{i, 'Tag'});

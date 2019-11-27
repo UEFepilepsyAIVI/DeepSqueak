@@ -17,6 +17,7 @@
 %Altered 27.9 for call screening by rciszek
 
 function varargout = DeepSqueak(varargin)
+
 set(groot,'defaultFigureVisible','on');
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -310,12 +311,14 @@ end
 % --- Executes on button press in AcceptCall.
 function AcceptCall_Callback(hObject, eventdata, handles)
 handles.data.calls.Accept(handles.data.currentcall) = 1;
+handles.update_position_axes = 1;
 NextCall_Callback(hObject, eventdata, handles)
 
 
 % --- Executes on button press in RejectCall.
 function RejectCall_Callback(hObject, eventdata, handles)
 handles.data.calls.Accept(handles.data.currentcall) = 0;
+handles.update_position_axes = 1;
 NextCall_Callback(hObject, eventdata, handles)
 
 
@@ -433,9 +436,11 @@ current_box = drawrectangle( 'Parent',handles.axes1,...
 
    
     
-audio_start = handles.data.audiodata.sample_rate*current_box.Position(1);
-audio_stop = handles.data.audiodata.sample_rate*(current_box.Position(1) + current_box.Position(3));
- 
+audio_start = handles.data.audiodata.sample_rate*current_box.Position(1)-current_box.Position(3);
+audio_stop = handles.data.audiodata.sample_rate*(current_box.Position(1) + 2*current_box.Position(3));
+
+audio_start = max(audio_start,1);
+audio_stop = min(audio_stop,size(handles.data.audiodata.samples,2));
 audio = handles.data.audiodata.samples(audio_start:audio_stop);
 new_tag = max(handles.data.calls.Tag) + 1;
 new_box = {handles.data.audiodata.sample_rate, current_box.Position, [0,0,0,0], 0, audio,0,0,1,new_tag };
@@ -771,6 +776,7 @@ function backwardButton_Callback(hObject, eventdata, handles)
  
     handles.data.windowposition = max(0, handles.data.windowposition - handles.data.settings.windowSize);
     guidata(hObject, handles);     
+    handles = guidata(hObject);
     update_position(hObject, eventdata, handles);
  
 
@@ -779,6 +785,7 @@ function forwardButton_Callback(hObject, eventdata, handles)
     
     handles.data.windowposition = min(handles.data.audiodata.duration, handles.data.windowposition + handles.data.settings.windowSize);  
     guidata(hObject, handles);
+    handles = guidata(hObject);
     update_position(hObject, eventdata, handles);
 
     
@@ -791,11 +798,8 @@ function update_position(hObject, eventdata, handles)
        handles.data.current_call_valid = true;
        handles.data.current_call_tag = num2str(handles.data.calls{handles.data.currentcall,'Tag'});
        handles.current_focus_position = [];       
-   
-       handles.current_focus_position =  [handles.data.windowposition, 0,  handles.data.settings.focus_window_size,0];   
-
     end
-    
+    handles.current_focus_position =  [handles.data.windowposition, 0,  handles.data.settings.focus_window_size,0];   
     update_fig(hObject, eventdata, handles);
     guidata(hObject, handles);
 

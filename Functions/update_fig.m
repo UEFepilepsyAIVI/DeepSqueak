@@ -1,6 +1,5 @@
 function update_fig(hObject, ~, handles)
 
-
 set(handles.hFig, 'pointer', 'watch')
 drawnow;
 
@@ -16,10 +15,8 @@ handles = guidata(hObject);
 renderEpochSpectogram(hObject,handles);
 handles = guidata(hObject);
 
-
-
 % Plot Call Position
-render_call_position(hObject,handles,false);
+render_call_position(hObject,handles,handles.update_position_axes);
 set(groot,'defaultFigureVisible','on');
 set(handles.hFig, 'pointer', 'arrow')
 guidata(hObject, handles);
