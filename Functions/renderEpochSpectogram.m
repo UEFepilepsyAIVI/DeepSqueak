@@ -48,7 +48,8 @@ function  renderEpochSpectogram(hObject, handles)
     set(handles.spectogramWindow,'Xlim',[handles.epochSpect.XData(1) handles.epochSpect.XData(end)]);
     set(handles.spectogramWindow,'ylim',[min_f/1000 max_f/1000]);
 
-
+    set_tick_timestamps(handles.spectogramWindow, false);
+    
     % Box Creation
     render_call_boxes(handles.spectogramWindow, handles, hObject,false,false);
 

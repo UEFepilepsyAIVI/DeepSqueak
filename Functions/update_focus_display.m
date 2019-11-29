@@ -1,4 +1,5 @@
-function update_focus_display(hObject, handles)
+function update_focus_display(hObject, handles )
+
 
 [I_f,windowsize_f,noverlap_f,nfft_f,rate_f,box_f,s_f,fr_f,ti_f,audio_f,AudioRange_f, window_start] = CreateFocusSpectrogram(handles.data.calls(handles.data.currentcall,:),handles);
 
@@ -16,6 +17,14 @@ else
     set(handles.axes1,'Xlim',[handles.spect.XData(1) handles.spect.XData(end)]);
 end
 
+%Update spectogram ticks and transform labels to
+%minutes:seconds.milliseconds
+x_min_max = xlim(handles.axes1);
+x_ticks = linspace(x_min_max(1), x_min_max(2),handles.data.settings.spectogram_ticks);
+xticks(handles.axes1, x_ticks(2:end-1) );
+set_tick_timestamps(handles.axes1,true);
+
+
 set(handles.axes1,'ylim',[handles.data.settings.LowFreq handles.data.settings.HighFreq]);
 
 [I_f,windowsize_f,noverlap_f,nfft_f,rate_f,box_f,s_f,fr_f,ti_f,audio_f,AudioRange_f, window_start] = CreateFocusSpectrogram(handles.data.calls(handles.data.currentcall,:),handles,true);
@@ -28,6 +37,8 @@ guidata(hObject,handles);
 handles = guidata(hObject);
 % Box Creation
 render_call_boxes(handles.axes1, handles,hObject, true,false);
+
+
 
 if stats.FilteredImage
     % Blur Box
@@ -83,5 +94,6 @@ set(handles.SNR, 'XData', [x;x], 'YData', [y;y], 'ZData', [z;z], 'CData', [col;c
 colormap(handles.axes3,parula);
 set(handles.axes3, 'XLim', [x(1), x(end)]);
 
+guidata(hObject, handles);
 end
 

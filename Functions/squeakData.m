@@ -34,6 +34,8 @@ classdef squeakData < handle
                 obj.settings.labels = {'FF','FM','Trill','Split',' ',' ',' ',' ',' ',' '};
                 obj.settings.DisplayTimePadding = 0;
                 obj.settings.windowSize = 1;
+                obj.settings.spectogram_ticks = 11;
+                obj.settings.focus_window_size = 0.5;
                 disp('Settings file not found. Create a new one...')
                 saveSettings(obj)
             end

@@ -1,4 +1,4 @@
-function [I,windowsize,noverlap,nfft,rate,box_f,s,fr,ti,audio,AudioRange,window_start] = CreateFocusSpectrogram(call,handles, call_only)
+function [I,windowsize,noverlap,nfft,rate,box,s,fr,ti,audio,AudioRange,window_start] = CreateFocusSpectrogram(call,handles, call_only)
 %% Extract call features for CalculateStats and display
 
 if nargin < 3

@@ -44,7 +44,11 @@ end
      delete(hText(i));         
  end
 
-handles.CurrentCallLineLext=  text((CallTime(1)),20,[num2str(1,'%.1f') ' s'],'Color','W', 'HorizontalAlignment', 'center','Parent',handles.detectionAxes);
+sec = floor(CallTime(1));
+min = floor(sec / 60);
+milliseconds = CallTime(1) - sec;
+ 
+handles.CurrentCallLineLext=  text((CallTime(1)),20,[num2str(min,'%.0f'),':', num2str(sec,'%.0f'), '.',num2str(milliseconds,'%.0f') ],'Color','W', 'HorizontalAlignment', 'center','Parent',handles.detectionAxes);
 
 % Call position
  hLine = findobj(handles.detectionAxes,'Type','Line', '-and', 'LineWidth',3 );
@@ -64,7 +68,14 @@ if isfield(handles, 'data')
         else
             handles.CurrentCallLinePosition.Color = [1,0,0];
         end
-        set(handles.CurrentCallLineLext,'Position',[calltime,1.4,0],'String',[num2str(calltime(1),'%.1f') ' s']);
+        
+        
+        sec = floor(calltime);
+        min = floor(sec / 60);
+        milliseconds = floor((calltime - sec)*100);
+        sec = sec - (min * 60);
+        call_time_label = [num2str(min,'%.0f'),':', num2str(sec,'%.0f'), '.',num2str(milliseconds,'%.0f') ];
+        set(handles.CurrentCallLineLext,'Position',[calltime,1.4,0],'String',call_time_label);
         set(handles.CurrentCallLinePosition,'XData',[calltime(1) calltime(1)]);   
         set(handles.CurrentCallLinePosition,'YData',[0 1]);  
     hRectangle = findobj(handles.detectionAxes,'Type','Rectangle');

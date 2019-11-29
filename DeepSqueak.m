@@ -246,6 +246,7 @@ soundsc(paddedsound(round(audiostart:audiostart+audiolength + 6249)),playbackRat
 %Set the default sizes for epoch and focus windows
 handles.data.settings.focus_window_size = 0.5;
 handles.data.settings.windowSize = 2;
+handles.data.settings.spectogram_ticks = 11;
 
 guidata(hObject, handles);
 

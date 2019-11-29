@@ -25,6 +25,4 @@ function excel_Callback(hObject, eventdata, handles)
     end
 
     export_Calls(@loop_calls,'_Stats.xlsx',hObject, eventdata, handles);
-close(hc);
-guidata(hObject, handles);
 end
