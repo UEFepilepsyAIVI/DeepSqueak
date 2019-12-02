@@ -32,11 +32,11 @@ h = waitbar(0,'Initializing');
 TrainingImages = {};
 Class = [];
 for j = 1:length(trainingdata)  % For Each File
-    Calls = loadCallfile([trainingpath trainingdata{j}]);
-    
+    [Calls,~,~] = loadCallfile([trainingpath trainingdata{j}],handles);
+
     for i = 1:height(Calls)     % For Each Call
         waitbar(i/height(Calls),h,['Loading File ' num2str(j) ' of '  num2str(length(trainingdata))]);
-        
+
         audio =  Calls.Audio{i};
         if ~isfloat(audio)
             audio = double(audio) / (double(intmax(class(audio)))+1);
@@ -52,14 +52,14 @@ for j = 1:length(trainingdata)  % For Each File
             y1 = axes2pix(length(fr),fr./1000,lowFreq);
             y2 = axes2pix(length(fr),fr./1000,highFreq);
             I=abs(s(round(y1:min(y2,size(s,1))),round(x1:x2))); % Get the pixels in the box
-            
+
             % Use median scaling
             med = median(abs(s(:)));
             im = mat2gray(flipud(I),[med*0.65, med*20]);
             im = single(imresize(im,imageSize));
             % Duplicate the image with random gaussian noise.
             %im2 = imnoise(im,'gaussian',.4*rand()+.1,.1*rand());
-            
+
         if categorical(Calls.Type(i)) == 'Noise'
             TrainingImages = [TrainingImages; {im}];% ; {im2}];
             Class = [Class; categorical({'Noise'})];% categorical({'Noise'})];
@@ -71,7 +71,7 @@ for j = 1:length(trainingdata)  % For Each File
 end
 delete(h)
 
-%% Train 
+%% Train
 
 % Reshape ans resize the training data
 X = single([]);
@@ -94,30 +94,30 @@ auimds = augmentedImageSource(imageSize,TrainX,TrainY,'DataAugmentation',aug);
 
 layers = [
     imageInputLayer([imageSize 1],'Name','input','normalization','none')
-    
+
     convolution2dLayer(3,16,'Padding','same','stride',[2 2])
     batchNormalizationLayer
     reluLayer
     maxPooling2dLayer(2,'Stride',2)
-    
+
     convolution2dLayer(5,16,'Padding','same','stride',2)
     batchNormalizationLayer
     reluLayer
     maxPooling2dLayer(2,'Stride',2)
-    
+
     convolution2dLayer(3,32,'Padding','same','stride',1)
     batchNormalizationLayer
     reluLayer
     maxPooling2dLayer(2,'Stride',2)
-    
+
     convolution2dLayer(3,32,'Padding','same','stride',1)
     batchNormalizationLayer
     reluLayer
-    
+
     fullyConnectedLayer(64)
     batchNormalizationLayer
     reluLayer
-    
+
     fullyConnectedLayer(length(categories(TrainY)))
     softmaxLayer
     classificationLayer];

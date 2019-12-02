@@ -39,21 +39,21 @@ h = waitbar(0,'Initializing');
 c=0;
 for k = 1:length(trainingdata)
     TTable = table({},{},'VariableNames',{'imageFilename','USV'});
-    
-    Calls = loadCallfile([trainingpath trainingdata{k}]);
 
-    
+    [Calls,~,~] = loadCallfile([trainingpath trainingdata{k}],handles.data.settings.audiofolder,handles);
+
+
     [p, filename] = fileparts(trainingdata{k});
     fname = fullfile(handles.data.squeakfolder,'Training','Images',filename);
     mkdir(fname);
-    
+
     % Remove Rejects
     Calls = Calls(Calls.Accept == 1, :);
-    
+
     % Find max call frequency for cutoff
     maxFR = max(sum(Calls.Box(:,[2,4])));
     %cutoff = min([Calls.Rate, maxFR*2000]) / 2;
-    
+
     if bout ~= 0
         %% Calculate Groups of Calls
         Distance = [];
@@ -72,22 +72,22 @@ for k = 1:length(trainingdata)
         Nidx = Lidx(G.Edges.Weight > bout);
         H =  rmedge(G,Nidx);
         bins = conncomp(H);
-        
+
         % Get the audio info
         info = audioinfo([audiopath audioname]);
         if info.NumChannels > 1
             warning('Audio file contains more than one channel. Use channel 1...')
         end
         rate = info.SampleRate;
-            
+
         for i = 1:length(unique(bins))
             CurrentSet = Calls(bins == i, :);
             Boxes = CurrentSet.Box;
-            
+
             Start = min(Boxes(:,1));
             Finish = max(Boxes(:,1) + Boxes(:,3));
-            
-            
+
+
             %% Read Audio
             windL = Start - mean(Boxes(:,3));
             if windL < 0
@@ -96,8 +96,8 @@ for k = 1:length(trainingdata)
             windR = Finish + mean(Boxes(:,3));
             audio=audioread([audiopath audioname],round([windL windR]*rate));
             Boxes(:,1) = Boxes(:,1)-windL;
-            
-            
+
+
             for j = 1:repeats
                 IMname = [num2str(c) '_' num2str(j) '.png'];
                 [~,box] = CreateTrainingData(...
@@ -107,18 +107,18 @@ for k = 1:length(trainingdata)
                     1,...
                     wind,noverlap,nfft,rate/2,fullfile(fname,IMname),AmplitudeRange,j,StretchRange);
                 TTable = [TTable;{fullfile('Training','Images',filename,IMname), box}];
-                
+
             end
             waitbar(i/length(unique(bins)),h,['Processing File ' num2str(k) ' of '  num2str(length(trainingdata))]);
             c=c+1;
-            
-            
+
+
         end
-        
+
     elseif bout == 0
         for i = 1:height(Calls)
             c=c+1;
-            
+
             % Augment audio by adding write noise, and change the amplitude
             for j = 1:repeats
                 IMname = [num2str(c) '_' num2str(j) '.png'];
@@ -128,11 +128,11 @@ for k = 1:length(trainingdata)
                     Calls.RelBox(i, :),...
                     Calls.Accept(i),...
                     wind, noverlap, nfft, Calls.Rate(i) / 2, fullfile(fname, IMname), AmplitudeRange, j, StretchRange);
-                
+
                 %                 imwrite(im,filename,'BitDepth',8)
                 TTable = [TTable;{fullfile('Training','Images',filename,IMname), box}];
             end
-            
+
             waitbar(i/height(Calls),h,['Processing File ' num2str(k) ' of '  num2str(length(trainingdata))]);
         end
     end
@@ -199,4 +199,3 @@ end
 imwrite(im,filename,'BitDepth',8);
 
 end
-

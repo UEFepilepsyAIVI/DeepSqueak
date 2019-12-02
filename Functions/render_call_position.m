@@ -72,7 +72,7 @@ if isfield(handles, 'data')
         
         sec = floor(calltime);
         min = floor(sec / 60);
-        milliseconds = floor((calltime - sec)*100);
+        milliseconds = floor((calltime - sec)*1000);
         sec = sec - (min * 60);
         call_time_label = [num2str(min,'%.0f'),':', num2str(sec,'%.0f'), '.',num2str(milliseconds,'%.0f') ];
         set(handles.CurrentCallLineLext,'Position',[calltime,1.4,0],'String',call_time_label);

@@ -20,8 +20,8 @@ AllPower = [];
 AllAccept = [];
 
 for j = 1:length(detectionFilename)
-    Calls = loadCallfile(fullfile(detectionFilepath, detectionFilename{j}));
-    
+    [Calls,~,~] = loadCallfile(fullfile(detectionFilepath, detectionFilename{j}),handles);
+
     AllBoxes = [AllBoxes; Calls.Box];
     AllScores = [AllScores; Calls.Score];
     AllClass = [AllClass; Calls.Type];
@@ -45,4 +45,3 @@ waitbar(1/2, hc, 'Saving...');
 save(fullfile(PathName, FileName),'Calls','-v7.3');
 update_folders(hObject, eventdata, handles);
 close(hc);
-

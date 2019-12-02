@@ -1,7 +1,14 @@
-function [samples, duration ,sample_rate] = loadAudioData(file_name)
+function [audiodata] = loadAudioData(audio_folder,file_name,audiodata)
+    file_name = strcat(audio_folder,file_name);
+    if nargin < 3
+       audiodata = {}; 
+    end
+
     [samples,Fs] = audioread( file_name );   
     info = audioinfo(file_name);
-    duration = info.Duration;
-    sample_rate = info.SampleRate;
+    
+    audiodata.samples = samples;
+    audiodata.duration = info.Duration;
+    audiodata.sample_rate = info.SampleRate;    
 end
 

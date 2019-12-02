@@ -30,13 +30,9 @@ stats.DeltaTime = [];
 %% For Each File
 for j = 1:length(fileName)
     file = load(fullfile(filePath,fileName{j}));
-     [Calls,audiodata,loaded_ClusteringData] = loadCallfile(fullfile(filePath,fileName{j}));
-    audio_file_path =  strcat(handles.data.settings.audiofolder,filesep, audiodata.AudioFile);
-    [samples, duration,sample_rate] = loadAudioData(audio_file_path);
-     handles.data.audiodata.samples = samples;
-     handles.data.audiodata.duration = duration;
-     handles.data.audiodata.sample_rate = sample_rate;     
-     handles.data.audiodata.AudioFile = audiodata.AudioFile;
+     [Calls,audiodata,loaded_ClusteringData] = loadCallfile(fullfile(filePath,fileName{j}),handles);
+     handles.data.audiodata = audiodata;
+
     % If the files is extracted contours, rather than a detection file
     if forClustering & ~isempty(loaded_ClusteringData)
         ClusteringData = [ClusteringData; loaded_ClusteringData];

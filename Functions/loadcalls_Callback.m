@@ -1,5 +1,5 @@
 % --- Executes on button press in LOAD CALLS.
-function loadcalls_Callback(hObject, eventdata, handles)
+function loadcalls_Callback(hObject, eventdata, handles,call_file_number)
 h = waitbar(0,'Loading Calls Please wait...');
 update_folders(hObject, eventdata, handles);
 handles = guidata(hObject);
@@ -10,32 +10,7 @@ end
 
 handles.data.calls = [];
 handles.data.audiodata = [];
-[handles.data.calls, handles.data.audiodata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
-
-audiofile_name = regexp(handles.current_detection_file, '(\s+)(?=[\w.-]+[\s]+[\w.-]+[\s]+[\w.-]+$)','split');
-audiofile_name = audiofile_name{1};
-
-%For compatibility with the save format of original DeepSqueak, the
-%calls are resaved with the audiodata if necessary.
-update_audiodata = isempty(handles.data.audiodata);
-
-for i=1:length(handles.audiofilesnames) 
-    if ~isempty(regexp(handles.audiofilesnames{i}, strcat('^',audiofile_name, '[.]'),'match'))
-        handles.data.audiodata.AudioFile  = handles.audiofilesnames{i}; 
-    end
-end
-
-audio_file_path =  strcat(handles.data.settings.audiofolder,filesep, handles.data.audiodata.AudioFile);
-[samples, duration,sample_rate] = loadAudioData(audio_file_path);
-
-handles.data.audiodata.samples = samples;
-handles.data.audiodata.duration = duration;
-handles.data.audiodata.sample_rate = sample_rate;
-
-if update_audiodata
-    audiodata = handles.data.audiodata;
-    save(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file),'audiodata','-append')
-end
+[handles.data.calls, handles.data.audiodata, ~] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file), handles);
 
 tag_column_exists = strcmp('Tag',handles.data.calls.Properties.VariableNames);
 if  ~tag_column_exists
@@ -148,9 +123,6 @@ updateWindowPosition(hObject,handles);
 popupmenuColorMap_Callback(hObject, eventdata, handles);
 focusWindowSizePopup_Callback(hObject, eventdata, handles);
 epochWindowSizePopup_Callback(hObject, eventdata, handles);
-
-
-
 
 update_fig(hObject, eventdata, handles);
 

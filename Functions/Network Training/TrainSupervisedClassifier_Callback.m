@@ -27,7 +27,7 @@ h = waitbar(0,'Initializing');
 X = [];
 Class = [];
 for j = 1:length(trainingdata)  % For Each File
-    Calls = loadCallfile(fullfile(trainingpath, trainingdata{j}));
+    [Calls,~,~] = loadCallfile(fullfile(trainingpath, trainingdata{j}),handles);
 
     Xtemp = [];
     Classtemp = [];
@@ -41,20 +41,20 @@ for j = 1:length(trainingdata)  % For Each File
         elseif ~isa(audio,'double')
             audio = double(audio);
         end
-        
+
         [s, fr, ti] = spectrogram((audio),round(Calls.Rate(i) * wind),round(Calls.Rate(i) * noverlap),round(Calls.Rate(i) * nfft),Calls.Rate(i),'yaxis');
-        
+
         x1 = axes2pix(length(ti),ti,Calls.RelBox(i, 1));
         x2 = axes2pix(length(ti),ti,Calls.RelBox(i, 3)) + x1;
         %y1 = axes2pix(length(fr),fr./1000,lowFreq);
         %y2 = axes2pix(length(fr),fr./1000,highFreq);
         y1 = axes2pix(length(fr),fr./1000,Calls.RelBox(i, 2)-padFreq);
         y2 = axes2pix(length(fr),fr./1000,Calls.RelBox(i, 4)+padFreq*2) + y1;
-        
+
         y1 = max(y1,1); % Make sure that the box isn't too big
         y2 = min(y2,size(s,1));
         I=abs(s(round(y1:y2),round(x1:x2))); % Get the pixels in the box
-        
+
         % Use median scaling
         med = median(abs(s(:)));
         im = mat2gray(flipud(I),[med*0.65, med*20]);
@@ -103,30 +103,30 @@ auimds = augmentedImageDatastore(imageSize,TrainX,TrainY,'DataAugmentation',aug)
 
 layers = [
     imageInputLayer([imageSize],'Name','input','normalization','none')
-    
+
     convolution2dLayer(3,16,'Padding','same','stride',[2 2])
     batchNormalizationLayer
     reluLayer
     maxPooling2dLayer(2,'Stride',2)
-    
+
     convolution2dLayer(5,16,'Padding','same','stride',1)
     batchNormalizationLayer
     reluLayer
     maxPooling2dLayer(2,'Stride',2)
-    
+
     convolution2dLayer(5,32,'Padding','same','stride',1)
     batchNormalizationLayer
     reluLayer
     maxPooling2dLayer(2,'Stride',2)
-    
+
     convolution2dLayer(5,32,'Padding','same','stride',1)
     batchNormalizationLayer
     reluLayer
-    
+
     fullyConnectedLayer(32)
     batchNormalizationLayer
     reluLayer
-    
+
     fullyConnectedLayer(length(categories(TrainY)))
     softmaxLayer
     classificationLayer];

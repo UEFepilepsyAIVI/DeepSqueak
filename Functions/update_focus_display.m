@@ -3,6 +3,9 @@ function update_focus_display(hObject, handles )
 
 [I_f,windowsize_f,noverlap_f,nfft_f,rate_f,box_f,s_f,fr_f,ti_f,audio_f,AudioRange_f, window_start] = CreateFocusSpectrogram(handles.data.calls(handles.data.currentcall,:),handles);
 
+
+[spectogram_y_lims, s_f,fr_f] = cutSpectogramFrequency(s_f, fr_f,handles);
+
 % Plot Spectrogram
 set(handles.axes1,'YDir', 'normal','YColor',[1 1 1],'XColor',[1 1 1],'Clim',[0 get_spectogram_max(hObject,handles)]);
 set(handles.axes1,'Parent',handles.hFig);
@@ -17,6 +20,7 @@ else
     set(handles.axes1,'Xlim',[handles.spect.XData(1) handles.spect.XData(end)]);
 end
 
+
 %Update spectogram ticks and transform labels to
 %minutes:seconds.milliseconds
 x_min_max = xlim(handles.axes1);
@@ -24,8 +28,7 @@ x_ticks = linspace(x_min_max(1), x_min_max(2),handles.data.settings.spectogram_t
 xticks(handles.axes1, x_ticks(2:end-1) );
 set_tick_timestamps(handles.axes1,true);
 
-
-set(handles.axes1,'ylim',[handles.data.settings.LowFreq handles.data.settings.HighFreq]);
+set(handles.axes1,'ylim',[spectogram_y_lims(1)/1000 spectogram_y_lims(2)/1000]);
 
 [I_f,windowsize_f,noverlap_f,nfft_f,rate_f,box_f,s_f,fr_f,ti_f,audio_f,AudioRange_f, window_start] = CreateFocusSpectrogram(handles.data.calls(handles.data.currentcall,:),handles,true);
 stats = CalculateStats(I_f,windowsize_f,noverlap_f,nfft_f,rate_f,box_f,handles.data.settings.EntropyThreshold,handles.data.settings.AmplitudeThreshold);

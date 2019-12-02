@@ -11,21 +11,9 @@ function  renderEpochSpectogram(hObject, handles)
     audio = handles.data.audiodata.samples(window_start:window_stop); 
 
     [zoomed_s, zoomed_f, zoomed_t] = spectrogram(audio,windowsize,noverlap,nfft,handles.data.audiodata.sample_rate,'yaxis');
-
-    upper_freq = find(zoomed_f>=handles.data.settings.HighFreq*1000,1);
-    if isempty(upper_freq)
-        upper_freq = length(zoomed_f);
-    end
-    lower_freq = find(zoomed_f>=handles.data.settings.LowFreq*1000,1);
-
-    % Extract the region within the frequency range
-    zoomed_s = zoomed_s(lower_freq:upper_freq,:);
-    zoomed_f = zoomed_f(lower_freq:upper_freq,:);    
     zoomed_t = zoomed_t + handles.data.windowposition;
-
-    min_f = min(zoomed_f);
-    max_f = max(zoomed_f);
-
+    [spectogram_y_lims, zoomed_s,zoomed_f] = cutSpectogramFrequency(zoomed_s, zoomed_f,handles);
+    
     % Plot Spectrogram
     cla(handles.spectogramWindow);
     handles.epochSpect = imagesc([],[],handles.background,'Parent', handles.spectogramWindow);
@@ -46,7 +34,7 @@ function  renderEpochSpectogram(hObject, handles)
   
 
     set(handles.spectogramWindow,'Xlim',[handles.epochSpect.XData(1) handles.epochSpect.XData(end)]);
-    set(handles.spectogramWindow,'ylim',[min_f/1000 max_f/1000]);
+    set(handles.spectogramWindow,'ylim',[spectogram_y_lims(1)/1000 spectogram_y_lims(2)/1000]);
 
     set_tick_timestamps(handles.spectogramWindow, false);
     
