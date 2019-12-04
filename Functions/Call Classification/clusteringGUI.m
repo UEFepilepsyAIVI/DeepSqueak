@@ -210,6 +210,7 @@ for i=1:length(ha)
         callID = i + (page - 1)*length(ha);
         colorIM = create_thumbnail(ClusteringData,clustIndex,i,thumbnail_size,callID,minfreq,ColorData);
 
+        
         %
         %     ha(i) = axes(d,'Units','Normalized','Position',[pos(i,2),pos(i,1),.14,.14]);
         %     handle_image(i) = image(colorIM + .5 .* rejected(clustIndex(i)),'parent',ha(i));
@@ -217,6 +218,7 @@ for i=1:length(ha)
         if rejected(clustIndex(callID))
             colorIM(:,:,1) = colorIM(:,:,1) + .5;
         end
+     
         set(handle_image(i),'CData',colorIM);
     else
         set(ha(i),'Visible','off')
@@ -304,11 +306,11 @@ end
 function colorIM = create_thumbnail(ClusteringData,clustIndex,i,thumbnail_size,callID,minfreq,ColorData)
     im = zeros(thumbnail_size(1),thumbnail_size(2));
     im(:,:) = 0.1;
-    if size(ClusteringData{clustIndex(i),1},1) < size(ClusteringData{clustIndex(i),1},2)
-        aspect_ratio = size(ClusteringData{clustIndex(i),1},1) / size(ClusteringData{clustIndex(i),1},2);
+    if size(ClusteringData{clustIndex(callID),1},1) < size(ClusteringData{clustIndex(callID),1},2)
+        aspect_ratio = size(ClusteringData{clustIndex(callID),1},1) / size(ClusteringData{clustIndex(callID),1},2);
         scaled_heigth = round(thumbnail_size(1) * aspect_ratio);
         offset = round((thumbnail_size(1) - scaled_heigth )/2);
-        resized = imresize(ClusteringData{clustIndex(i),1},[scaled_heigth thumbnail_size(2)]);
+        resized = imresize(ClusteringData{clustIndex(callID),1},[scaled_heigth thumbnail_size(2)]);
         start_index = offset;
         end_index = offset+scaled_heigth-1;
         if offset
@@ -317,10 +319,10 @@ function colorIM = create_thumbnail(ClusteringData,clustIndex,i,thumbnail_size,c
             im = resized;
         end
     else 
-        aspect_ratio = size(ClusteringData{clustIndex(i),1},1) / size(ClusteringData{clustIndex(i),1},2);
+        aspect_ratio = size(ClusteringData{clustIndex(callID),1},1) / size(ClusteringData{clustIndex(callID),1},2);
         scaled_width = round(thumbnail_size(2) / aspect_ratio);
         offset = round((thumbnail_size(2) - scaled_width )/2);
-        resized = imresize(ClusteringData{clustIndex(i),1},[thumbnail_size(1) scaled_width]);
+        resized = imresize(ClusteringData{clustIndex(callID),1},[thumbnail_size(1) scaled_width]);
         start_index = max(offset,1);
         end_index = offset+scaled_width-1;
         if offset 
