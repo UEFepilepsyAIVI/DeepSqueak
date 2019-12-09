@@ -2,7 +2,7 @@
 
 > Fork of [DeepSqueak](https://github.com/DrCoffey/DeepSqueak) (Coffey, Marx, Neumaier, 2019), with additional functionalities for  screening of whole records for false negatives.
 
-![screenshot](https://i.postimg.cc/MKcSQqGr/Deep-Squeak-screener.png)
+![screenshot](https://i.postimg.cc/dVc827jb/EXAMPLE.png)
 
 ## Additions
 - Free backward and forward movement along the record.
@@ -12,6 +12,7 @@
 - Up Arrow = next timepoint in spectrogram, Down Arrow = previous timepoint in spectrogram.
 - Shift + Click on detection to reject it.
 - Select, move, and modify ROIs of detected calls.
+![screenshot](https://i.postimg.cc/W1ncjkWj/EXAMPLE-02.png)
 - Possibility to mark calls not detected by FRCNN.
 - Black & white color map.
 - Constant time and spectrogram scales.
