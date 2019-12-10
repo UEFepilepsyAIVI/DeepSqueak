@@ -24,8 +24,7 @@ if isempty(audiodata)
     audiofile_name = audiofile_name{1};
 
     for i=1:length(handles.audiofilesnames) 
-        handles.audiofilesnames{i}
-        strcat('^',audiofile_name, '[.]')
+
         if ~isempty(regexp(handles.audiofilesnames{i}, strcat('^',audiofile_name, '[.]'),'match'))
             audiodata.AudioFile  = handles.audiofilesnames{i}; 
         end

@@ -1,7 +1,7 @@
 function ViewClusters_Callback(hObject, eventdata, handles)
-[ClusteringData,clustAssign] = CreateClusteringData(handles.data, 0);
+[ClusteringData,clustAssign] = CreateClusteringData(handles, 0);
 
-[clusterName, rejected, finished] = clusteringGUI(clustAssign, ClusteringData,1);
+[clusterName, rejected, finished, clustAssign] = clusteringGUI(clustAssign, ClusteringData,1);
 
 % Save the clusters
 if finished == 1

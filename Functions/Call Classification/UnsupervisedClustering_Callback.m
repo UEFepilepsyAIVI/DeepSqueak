@@ -15,17 +15,17 @@ clustAssign = zeros(size(ClusteringData,1),1);
 finished = 0; % Repeated until
 while ~finished
     choice = questdlg('Choose clustering method:','Cluster','ARTwarp','K-means (recommended)','Cancel','K-means (recommended)');
-    
+
     switch choice
         case 'Cancel'
             return
-            
+
         case 'K-means (recommended)'
             hb = waitbar(.5,'Preparing Data');
             % FREQ 15 Chunks
             %             data = cellfun(@(x) imresize(x-mean(x),[20 1]),ClusteringData(:,4),'UniformOutput',0);
             %             data = [data{:}]';
-            
+
             % Parameterized data
             nrm = @(x) ((x - mean(x,1)) ./ std(x,1));
             ReshapedX=cell2mat(cellfun(@(x) imresize(x',[1 9]) ,ClusteringData(:,4),'UniformOutput',0));
@@ -35,7 +35,7 @@ while ~finished
             freq = nrm(freq);
             duration = repmat(cell2mat(ClusteringData(:,3)),[1 8]);
             duration = nrm(duration);
-            
+
             close(hb)
             FromExisting = questdlg('From existing model?','Cluster','Yes','No','No');
             switch FromExisting % Load Model
@@ -46,15 +46,15 @@ while ~finished
                     slope_weight = str2double(clusterParameters{1});
                     freq_weight = str2double(clusterParameters{2});
                     duration_weight = str2double(clusterParameters{3});
-                    
+
                     data = [
                         freq     .*  freq_weight,...
                         slope    .*  slope_weight,...
                         duration .*  duration_weight,...
                         ];
-                    
+
                     optimize = questdlg('Optimize Cluster Number?','Cluster Optimization','Elbow Optimized','User Defined','Elbow Optimized');
-                    
+
                     switch optimize
                         case 'Elbow Optimized'
                             opt_options = inputdlg({'Max Clusters','Replicates'},'Cluster Optimization',[1 50; 1 50],{'100','3'});
@@ -70,7 +70,7 @@ while ~finished
                             k = str2num(k{1});
                             [clustAssign, C]= kmeans(data,k,'Distance','sqeuclidean','Replicates',10);
                     end
-                    
+
                 case 'Yes'
                     [FileName,PathName] = uigetfile(fullfile(handles.data.squeakfolder,'Clustering Models','*.mat'));
                     load(fullfile(PathName,FileName),'C','freq_weight','slope_weight','duration_weight','clusterName');
@@ -79,15 +79,15 @@ while ~finished
                         slope    .*  slope_weight,...
                         duration .*  duration_weight,...
                         ];
-                    
-                    
+
+
                     if exist('C', 'var') ~= 1
                         warndlg('K-means model could not be found. Is this file a trained k-means model?')
                         continue
                     end
             end
             [clustAssign,D] = knnsearch(C,data,'Distance','seuclidean');
-            
+
             %% Sort the calls by how close they are to the cluster center
             [~,idx] = sort(D);
             clustAssign = clustAssign(idx);
@@ -118,8 +118,8 @@ while ~finished
             catch
                 disp('For some reason, I couldn''t make a montage of the call exemplars')
             end
-            
-            
+
+
         case 'ARTwarp'
             FromExisting = questdlg('From existing model?','Cluster','Yes','No','No');
             switch FromExisting% Load Art Model
@@ -139,7 +139,7 @@ while ~finished
                     catch ME
                         disp(ME)
                     end
-                    
+
                 case 'Yes'
                     [FileName,PathName] = uigetfile(fullfile(handles.data.squeakfolder,'Clustering Models','*.mat'));
                     load(fullfile(PathName,FileName),'ARTnet','settings');
@@ -147,11 +147,11 @@ while ~finished
                         warndlg('ARTnet model could not be found. Is this file a trained ARTwarp2 model?')
                         continue
                     end
-                    
+
             end
             [clustAssign] = GetARTwarpClusters(ClusteringData(:,4),ARTnet,settings);
     end
-    
+
     %     data = freq;
     %         epsilon = 0.0001;
     % mu = mean(data);
@@ -166,17 +166,17 @@ while ~finished
     %
     % data  = (freq-mean(freq)) ./ std(freq)
     % [clustAssign, C]= kmeans(data,10,'Distance','sqeuclidean','Replicates',10);
-    
-    
+
+
     %% Assign Names
-    % If the 
+    % If the
     if strcmp(choice, 'K-means (recommended)') && strcmp(FromExisting, 'Yes')
         clustAssign = categorical(clustAssign, 1:size(C,1), cellstr(clusterName));
     end
-    
-    [clusterName, rejected, finished] = clusteringGUI(clustAssign, ClusteringData);
-    
-    
+
+    [clusterName, rejected, finished, clustAssign] = clusteringGUI(clustAssign, ClusteringData);
+
+
 end
 %% Update Files
 % Save the clustering model
