@@ -5,7 +5,7 @@ if nargin == 3
     [audiodata, audiopath] = uigetfile({'*.wav;*.wmf;*.flac;*.UVD' 'Audio File';'*.wav' 'WAV (*.wav)'; '*.wmf' 'WMF (*.wmf)'; '*.flac' 'FLAC (*.flac)'; '*.UVD' 'Ultravox File (*.UVD)'},['Select Corresponding Audio File for ' trainingdata],handles.data.settings.audiofolder);
     inputfile = [audiopath audiodata];
     hc = waitbar(0,'Loading File');
-    [Calls,~,~] = loadCallfile([trainingpath trainingdata],handles.data.settings.audiofolder,handles);
+    [Calls,~,~] = loadCallfile([trainingpath trainingdata],handles);
 
 end
 
@@ -84,7 +84,6 @@ for i=1:length(begin_time)
     x2 = axes2pix(length(ti),ti,call_duration(i));
     lowfreq = axes2pix(length(fr),fr./1000,lower_freq(i));
     hi_freq = axes2pix(length(fr),fr./1000,high_freq_(i));
-
     I = abs(s(round(lowfreq:hi_freq),:));
     % Calculate the entropy
     entropy = 1 - (geomean(I,1) ./ mean(I,1));

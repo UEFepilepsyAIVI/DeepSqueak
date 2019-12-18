@@ -96,7 +96,6 @@ guidata(hObject,handles);
 handles = guidata(hObject);
 
 
-
 % Plot Call Position
 render_call_position(hObject,handles,true);
 

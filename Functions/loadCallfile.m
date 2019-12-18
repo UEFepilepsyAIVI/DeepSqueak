@@ -1,5 +1,5 @@
 function [Calls,audiodata,ClusteringData] = loadCallfile(filename,handles)
-audiodata = {};
+audiodata = struct;
 
 ClusteringData = [];
 load(filename, 'Calls');
@@ -17,7 +17,7 @@ if isempty(handles)
 end
 
 %Try to match the detections to a file in the Audio folder
-if isempty(audiodata)
+if ~exist('audiodata') | ~isfield(audiodata,'AudioFile')
 
     [filepath,name,ext] = fileparts(filename); 
     audiofile_name = regexp(name, '(\s+)(?=[\w.-]+[\s]+[\w.-]+[\s]+[\w.-]+$)','split');
@@ -28,15 +28,17 @@ if isempty(audiodata)
         if ~isempty(regexp(handles.audiofilesnames{i}, strcat('^',audiofile_name, '[.]'),'match'))
             audiodata.AudioFile  = handles.audiofilesnames{i}; 
         end
-    end
-
-    %If matching audiofile cannot be found, show an error message
-    if isempty(audiodata)
-        errordlg(sprintf('Audio file for "%s" not found. Please make sure the audio files are located within the "Audio" folder, and re-run the analysis using the Screener.',filename),'File Error');
-        return;
-    end    
-    
+    end  
 end
+
+%If matching audiofile cannot be found, show file selection dialog
+if  ~exist('audiodata') | ~isfield(audiodata,'AudioFile') | ~isfile(filename)
+    [~, file_part] = fileparts(filename); 
+    [file,path] = uigetfile({'*.wav'; '*.ogg'; '*.flac'; '*.au'; '*.aiff'; '*.aif'; '*.aifc'; '*.mp3'; '*.m4a';'*.mp4';}, sprintf('Select audio matching the detection file %s',file_part));   
+    audiodata.AudioFile = file;
+    save(filename,'Calls','ClusteringData','audiodata','-v7.3');
+    
+end  
 
 audiodata = loadAudioData(handles.data.settings.audiofolder,audiodata.AudioFile,audiodata);
 
