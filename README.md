@@ -27,4 +27,4 @@
 **Screener**: Lara-Valderrábano, L. and Ciszek, R.
 
 
-<a href='https://postimages.org/' target='_blank'><img src='https://i.postimg.cc/rp5vcrG8/Deep-Squeak-Screener-10.gif' border='0' alt='Deep-Squeak-Screener-10'/></a><br /><a href='https://postimages.org/'>picture upload sites</a><br />
+<a href='https://postimg.cc/Jy4T5tdg' target='_blank'><img src='https://i.postimg.cc/Jy4T5tdg/Deep-Squeak-Screener-10.gif' border='0' alt='Deep-Squeak-Screener-10'/></a>
