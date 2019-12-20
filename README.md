@@ -18,6 +18,7 @@
 - Constant time and spectrogram scales.
 - Possibility to modify time and spectrogram scales, Focus (upper spectrogram), Epoch (lower spectrogram).
 - Sonic Visualizer export/import.
+- Open Original DeepSqueak detections files.
 - GUI tweaks.
 
 
