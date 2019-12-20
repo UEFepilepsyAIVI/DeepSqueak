@@ -10,5 +10,5 @@ if isstring(data) |ischar(data)
 else
    audio = data; 
 end
-audio = [pad; mean(audio - mean(audio,1) ,2)]; % Take the mean of the audio channels
+audio = [mean(audio - mean(audio,1) ,2)]; % Take the mean of the audio channels
 audio = int16(audio * 32767); % Convert to int16

@@ -237,10 +237,8 @@ playbackRate = handles.data.calls.Rate(handles.data.currentcall) * handles.data.
 % Bandpass Filter
 % audio = bandpass(audio,[handles.data.calls.RelBox(handles.data.currentcall, 2), handles.data.calls.RelBox(handles.data.currentcall, 2) + handles.data.calls.RelBox(handles.data.currentcall, 4)] * 1000,handles.data.calls.Rate(handles.data.currentcall));
 paddedsound = [zeros(3125,1); audio; zeros(3125,1)];
-audiostart = handles.data.calls.RelBox(handles.data.currentcall, 1) * handles.data.calls.Rate(handles.data.currentcall);
-audiolength = handles.data.calls.RelBox(handles.data.currentcall, 3) * handles.data.calls.Rate(handles.data.currentcall);
-soundsc(paddedsound(round(audiostart:audiostart+audiolength + 6249)),playbackRate);
 
+soundsc(paddedsound,playbackRate);
 
 %Set the default sizes for epoch and focus windows
 handles.data.settings.focus_window_size = 0.5;
@@ -436,12 +434,13 @@ current_box = drawrectangle( 'Parent',handles.axes1,...
 
    
     
-audio_start = handles.data.audiodata.sample_rate*current_box.Position(1)-current_box.Position(3);
-audio_stop = handles.data.audiodata.sample_rate*(current_box.Position(1) + 2*current_box.Position(3));
+audio_start = handles.data.audiodata.sample_rate*current_box.Position(1);
+audio_stop = handles.data.audiodata.sample_rate*(current_box.Position(1) + current_box.Position(3) );
 
 audio_start = max(audio_start,1);
-audio_stop = min(audio_stop,size(handles.data.audiodata.samples,2));
+audio_stop = min(audio_stop,size(handles.data.audiodata.samples,1));
 audio = handles.data.audiodata.samples(audio_start:audio_stop);
+audio = audio - mean(audio,1);
 new_tag = max(handles.data.calls.Tag) + 1;
 new_box = {handles.data.audiodata.sample_rate, current_box.Position, [0,0,0,0], 0, audio,0,0,1,new_tag };
 new_box = table();
@@ -449,7 +448,7 @@ new_box.Rate = handles.data.audiodata.sample_rate;
 new_box.Box = current_box.Position;
 new_box.RelBox = calculateRelativeBox(current_box.Position, handles.axes1);
 new_box.Score = 1;
-new_box.Audio = {int16(audio)};
+new_box.Audio = {int16(audio*32767)};
 new_box.Type = categorical({'USV'});
 new_box.Power = 0;
 new_box.Accept = 1;
@@ -457,10 +456,8 @@ new_box.Tag = new_tag;
 
 handles.data.calls = [handles.data.calls;new_box];
 
-
 set(current_box,'Tag',num2str(new_tag)); 
 set(current_box,'Color',[0 1 0]);
-
 
 %Now delete the roi and render the figure. The roi will be rendered along
 %with the existing boxes.
