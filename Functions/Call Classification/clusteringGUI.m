@@ -130,6 +130,7 @@ clearvars -global
 end
 
 function txtbox_Callback(hObject, eventdata, handles)
+    global k clusterName
     clusterName(k) = get(hObject,'String');
 end
 
@@ -148,6 +149,22 @@ end
 
 function render_GUI(d)
 global k clustAssign clusters rejected ClusteringData minfreq maxfreq d ha ColorData txtbox totalCount count clusterName handle_image page pagenumber finished thumbnail_size
+  
+    clustIndex = find(clustAssign==clusters(k));
+    
+    if length(clustIndex) == 0
+      k = 1
+      valid_clusters = unique(clustAssign);
+
+      if length(valid_clusters) == 0
+          return;
+      end 
+      
+      k = valid_clusters(1)
+      page = k
+      clustIndex = find(clustAssign==clusters(k))           
+    end
+
     % Number of calls in each cluster
     for cl = 1:length(clusterName)
         count(cl) = sum(clustAssign==clusters(cl));
@@ -175,7 +192,6 @@ global k clustAssign clusters rejected ClusteringData minfreq maxfreq d ha Color
     end
 
     %% Make the axes
-    clustIndex = find(clustAssign==clusters(k));
     ypos = .05:.1:.75;
     xpos = .02:.14:.8;
     xpos = fliplr(xpos);
@@ -243,12 +259,12 @@ end
 end
 
 function add_cluster_context_menu(hObject, i)
-global clustAssign
+global clustAssign clusterName
         unique_clusters = unique(clustAssign);
 
         c = uicontextmenu;
         for ci=1:length(unique_clusters)
-            uimenu(c,'Label',string(unique_clusters(ci)),'Callback',{@assign_cluster,i,unique_clusters(ci)});    
+            uimenu(c,'Label',string(clusterName(ci)),'Callback',{@assign_cluster,i,unique_clusters(ci)});    
         end
 
         set(hObject, 'UIContextMenu',c);
