@@ -51,10 +51,14 @@ for j = 1:length(selections) % Do this for each file
         y2 = axes2pix(length(fr),fr./1000,highFreq);
         I=abs(s(round(y1 : min(y2,size(s,1))), round(x1 : min(x2,size(s,2))))); % Get the pixels in the box
         
+        if isempty(I)
+           continue; 
+        end
+        
         % Use median scaling
         med = median(abs(s(:)));
         im = mat2gray(flipud(I),[med*0.65, med*20]);
-        
+
         X = imresize(im,imageSize);
         [Class, score] = classify(DenoiseNet,X);
         Calls.Score(i) = score(1);

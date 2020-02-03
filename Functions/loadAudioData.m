@@ -8,8 +8,8 @@ function [audiodata] = loadAudioData(audio_folder,file_name,audiodata)
         return;
     end    
 
-    file_name = strcat(audio_folder,file_name);
-    
+    file_name = [audio_folder,'/',file_name];
+    file_name = strrep(file_name,'\','/');
     if ~isfile(file_name)   
         return;
     end

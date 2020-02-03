@@ -1,8 +1,10 @@
 function [NewclusterName, NewRejected, NewFinished, NewClustAssign] = clusteringGUI(clustAssign1,ClusteringData1,JustLooking)
 % I know I shouldn't use global variables, but they are so convenient, and I was in a hurry.
+
 clearvars -global
-global k clustAssign clusters rejected ClusteringData minfreq maxfreq d ha ColorData txtbox totalCount count clusterName handle_image page pagenumber finished thumbnail_size
+global k clustAssign clusters rejected ClusteringData minfreq maxfreq d ha ColorData txtbox totalCount count clusterName handle_image page pagenumber finished thumbnail_size call_id_text call_file_text
 clustAssign = clustAssign1;
+%Image, Lower freq, delta time, Time points, Freq points, File path, Call ID in file, power, RelBox
 ClusteringData = ClusteringData1;
 thumbnail_size = [60*2 100*2];
 rejected = zeros(1,length(clustAssign));
@@ -18,16 +20,15 @@ else
     clusterName = categorical(unique(clustAssign(~isnan(clustAssign))));
     clusters = (unique(clustAssign(~isnan(clustAssign))));
 end
-
-
-        
-d = dialog('Visible','off','Position',[360,500,600,600],'WindowStyle','Normal','resize', 'on' );
+       
+d = dialog('Visible','off','Position',[360,500,600,600],'WindowStyle','Normal','resize', 'on','WindowState','maximized' );
 d.CloseRequestFcn = @windowclosed;
 set(d,'color',[.1, .1, .1]);
 k = 1;
 page = 1;
 
 movegui(d,'center');
+set(d,'WindowButtonMotionFcn', @mouse_over_Callback);
 
 txt = uicontrol('Parent',d,...
 'BackgroundColor',[.1 .1 .1],...
@@ -113,6 +114,27 @@ pagenumber = uicontrol('Parent',d,...
     'Position',[118 509 80 30],...
     'HorizontalAlignment','center');
 
+
+call_id_text = uicontrol('Parent',d,...
+    'BackgroundColor',[.1 .1 .1],...
+    'ForegroundColor','w',...
+    'Style','text',...
+    'String','',...
+    'FontSize',12,...
+    'Position',[200 484 200 12],...
+    'HorizontalAlignment','center');
+
+call_file_text = uicontrol('Parent',d,...
+    'BackgroundColor',[.1 .1 .1],...
+    'ForegroundColor','w',...
+    'Style','text',...
+    'String','',...
+    'FontSize',12,...
+    'Position',[200 472 200 12],...
+    'HorizontalAlignment','center');
+
+
+
 render_GUI(d)
 
 % Wait for d to close before running to completion
@@ -127,6 +149,33 @@ clearvars -global
 
 
 
+end
+
+function mouse_over_Callback(hObject, eventdata, handles)
+    global ha d call_file_text call_id_text ClusteringData page clustIndex k clustAssign clusters
+
+    call_file = '';
+    call_id = '';
+    
+    clustIndex = find(clustAssign==clusters(k));
+
+    for i=1:length(ha)
+        if i <= length(clustIndex) - (page - 1)*length(ha)
+            call_index = clustIndex(i + (page - 1)*length(ha));
+            cursor_point = get(d,'currentpoint');
+            axis_position = get(ha(i),'Position');
+
+            if cursor_point(1)>axis_position(1) && cursor_point(2)>axis_position(2) && cursor_point(1) < (axis_position(1)+axis_position(3)) && cursor_point(2)<(axis_position(2)+axis_position(4))
+                [~,name,~] = fileparts(ClusteringData{call_index,6});
+                call_file = name ;
+                call_id = num2str(ClusteringData{call_index,7});
+            end
+        end     
+    end
+        
+    set(call_file_text, 'String',call_file);
+    set(call_id_text, 'String',call_id);
+    
 end
 
 function txtbox_Callback(hObject, eventdata, handles)
@@ -192,8 +241,8 @@ global k clustAssign clusters rejected ClusteringData minfreq maxfreq d ha Color
     end
 
     %% Make the axes
-    ypos = .05:.1:.75;
-    xpos = .02:.14:.8;
+    ypos = .05:.15:.70;
+    xpos = .02:.22:.78;
     xpos = fliplr(xpos);
     c = 0;
     for i = 1:length(ypos)
@@ -203,24 +252,27 @@ global k clustAssign clusters rejected ClusteringData minfreq maxfreq d ha Color
         end
     end
     pos = flipud(pos);
+    
     for i=1:i*j
         if i <= length(clustIndex) - (page - 1)*length(ha)
 
 
-            colorIM = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,i,minfreq,ColorData);     
-            ha(i) = axes(d,'Units','Normalized','Position',[pos(i,2),pos(i,1),.13,.09]);
+            [colorIM, rel_x, rel_y] = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,i,minfreq,ColorData);     
+            ha(i) = axes(d,'Units','Normalized','Position',[pos(i,2),pos(i,1),.18,.12]);
             handle_image(i) = image(colorIM + .5 .* rejected(clustIndex(i)),'parent',ha(i));
             set(handle_image(i), 'ButtonDownFcn',{@clicked,clustIndex(i),i,i});
-            axis(ha(i),'off');
+            %axis(ha(i),'off');
 
+            config_axis(ha(i),i, rel_x, rel_y);
             add_cluster_context_menu(handle_image(i),clustIndex(i));
         else
-            ha(i) = axes(d,'Units','Normalized','Position',[pos(i,2),pos(i,1),.13,.09]);
+            ha(i) = axes(d,'Units','Normalized','Position',[pos(i,2),pos(i,1),.18,.12]);
             handle_image(i) = image(colorIM,'parent',ha(i));
             set(ha(i),'Visible','off')
             set(get(ha(i),'children'),'Visible','off');
-            axis(ha(i),'off');
-
+            %axis(ha(i),'off');
+            %config_axis(i,colorIM, rel_x, rel_y);
+              
         end
 
 
@@ -228,33 +280,65 @@ global k clustAssign clusters rejected ClusteringData minfreq maxfreq d ha Color
     end
     
 
+end
+
+
+function config_axis(axis_handles,i, rel_x, rel_y)
+global ha ClusteringData
+        set(axis_handles,'xcolor','w')
+        set(axis_handles,'ycolor','w') 
+
+        x_lim = xlim(axis_handles);
+        x_span = x_lim(2) - x_lim(1);
+        xtick_positions = linspace(x_span*rel_x(1)+x_lim(1), x_span*rel_x(2)+x_lim(1),4);            
+        x_ticks = linspace(0,ClusteringData{i,3},4);
+        x_ticks = arrayfun(@(x) sprintf('%.3f',x),x_ticks(2:end),'UniformOutput',false);
+        
+        y_lim = ylim(axis_handles);
+        y_span = y_lim(2) - y_lim(1);
+        ytick_positions = linspace(y_span*rel_y(1)+y_lim(1), y_span*rel_y(2)+y_lim(1),3);
+
+
+        
+        y_ticks = linspace(ClusteringData{i,2},ClusteringData{i,2}+ClusteringData{i,9},3);
+        y_ticks = arrayfun(@(x) sprintf('%.1f',x),y_ticks(1:end),'UniformOutput',false);
+        y_ticks = flip(y_ticks);
+
+        yticks(axis_handles,ytick_positions);
+        xticks(axis_handles,xtick_positions(2:end));
+        xticklabels(axis_handles,x_ticks);
+        yticklabels(axis_handles,y_ticks);
 end
 
 function plotimages
-global k clustAssign clusters rejected ClusteringData minfreq d ha ColorData handle_image page thumbnail_size
-clustIndex = find(clustAssign==clusters(k));
+    global k clustAssign clusters rejected ClusteringData minfreq d ha ColorData handle_image page thumbnail_size
+    clustIndex = find(clustAssign==clusters(k));
 
+    for i=1:length(ha)
+        if i <= length(clustIndex) - (page - 1)*length(ha)
+           % set(ha(i),'Visible','off')
+            set(get(ha(i),'children'),'Visible','on');
+            callID = i + (page - 1)*length(ha);
+            [colorIM, rel_x, rel_y] = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,callID,minfreq,ColorData);
 
-for i=1:length(ha)
-    if i <= length(clustIndex) - (page - 1)*length(ha)
-        set(ha(i),'Visible','off')
-        set(get(ha(i),'children'),'Visible','on');
-        callID = i + (page - 1)*length(ha);
-        colorIM = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,callID,minfreq,ColorData);
+            set(handle_image(i), 'ButtonDownFcn',{@clicked,clustIndex(callID),i,callID});
+            add_cluster_context_menu(handle_image(i),clustIndex(i));
+            if rejected(clustIndex(callID))
+                colorIM(:,:,1) = colorIM(:,:,1) + .5;
+            end
 
-        set(handle_image(i), 'ButtonDownFcn',{@clicked,clustIndex(callID),i,callID});
-        add_cluster_context_menu(handle_image(i),clustIndex(i));
-        if rejected(clustIndex(callID))
-            colorIM(:,:,1) = colorIM(:,:,1) + .5;
+            set(handle_image(i),'CData',colorIM);
+
+            config_axis(ha(i),clustIndex(callID), rel_x, rel_y);
+
+            set(ha(i),'Visible','on')
+
+        else
+            set(ha(i),'Visible','off')
+            set(get(ha(i),'children'),'Visible','off');
         end
-     
-        set(handle_image(i),'CData',colorIM);
-    else
-        set(ha(i),'Visible','off')
-        set(get(ha(i),'children'),'Visible','off');
+
     end
-    
-end
 
 end
 
@@ -300,7 +384,7 @@ clustIndex = find(clustAssign==clusters(k));
 
 rejected(i) = ~rejected(i);
 
-colorIM = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,callID,minfreq,ColorData);
+[colorIM, rel_x, rel_y] = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,callID,minfreq,ColorData);
 
 if rejected(i)
     colorIM(:,:,1) = colorIM(:,:,1) + .5;
@@ -367,9 +451,13 @@ finished = 2;
 delete(hObject)
 end
 
-function colorIM = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,callID,minfreq,ColorData)
+function [colorIM, rel_x, rel_y] = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,callID,minfreq,ColorData)
     im = zeros(thumbnail_size(1),thumbnail_size(2));
     im(:,:) = 0.1;
+    
+    rel_x = [0 1];
+    rel_y = [0 1];   
+    
     if size(ClusteringData{clustIndex(callID),1},1) < size(ClusteringData{clustIndex(callID),1},2)
         aspect_ratio = size(ClusteringData{clustIndex(callID),1},1) / size(ClusteringData{clustIndex(callID),1},2);
         scaled_heigth = round(thumbnail_size(1) * aspect_ratio);
@@ -379,6 +467,7 @@ function colorIM = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,cal
         end_index = offset+scaled_heigth-1;
         if offset
             im(start_index:end_index,:) = resized;  
+            rel_y = [start_index / size(im,1) end_index / size(im,1)]; 
         else
             im = resized;
         end
@@ -391,10 +480,13 @@ function colorIM = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,cal
         end_index = offset+scaled_width-1;
         if offset 
             im(:,start_index:end_index) = resized;  
+            rel_x = [start_index / size(im,2) end_index / size(im,2)]; 
         else
             im = resized;
         end
-    end       
+    end   
+    
+
     
     freqdata = round(linspace(ClusteringData{clustIndex(callID),2} + ClusteringData{clustIndex(callID),9},ClusteringData{clustIndex(callID),2},thumbnail_size(1)));
     colorIM(:,:,1) =  single(im).*.0039.*ColorData(freqdata - minfreq,1);

@@ -61,6 +61,12 @@ while ~finished
                             if isempty(opt_options)
                                 return
                             end
+                            
+                            %Cap the max clusters to the number of samples.
+                            if size(data,1) < str2num(opt_options{1})
+                                opt_options{1} = num2str(size(data,1));
+                            end
+                            
                             [clustAssign,C]=kmeans_opt(data,str2num(opt_options{1}),0,str2num(opt_options{2}));
                         case 'User Defined'
                             k = inputdlg({'Choose number of k-means:'},'Cluster with k-means',1,{'15'});

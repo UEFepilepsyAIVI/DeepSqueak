@@ -30,7 +30,7 @@ window_width = round(handles.data.audiodata.sample_rate*seconds);
 call_box_in_samples = round( handles.data.audiodata.sample_rate*box);
 call_box_start = call_box_in_samples(1);
 call_box_end = call_box_in_samples(1) + call_box_in_samples(3);
-call_box_width =   call_box_in_samples(3);
+call_box_width = call_box_in_samples(3);
 
 if call_only
     call_box_offset = 0;
@@ -44,6 +44,9 @@ window_stop = min(call_box_end + call_box_offset, length(handles.data.audiodata.
 
 if window_start == 1
     window_stop = window_start + seconds* handles.data.audiodata.sample_rate;
+elseif window_start > window_stop
+   warning('Callbox extends beyond audio duration.');
+   window_start = window_stop -  window_width;
 end
 
 audio = handles.data.audiodata.samples(window_start:window_stop); 
@@ -60,7 +63,6 @@ end
 windowsize = round(rate * 0.0032);
 noverlap = round(rate * 0.0028);
 nfft = round(rate * 0.0032);
-
 
 % Spectrogram
 [s, fr, ti] = spectrogram(audio,windowsize,noverlap,nfft,rate,'yaxis');

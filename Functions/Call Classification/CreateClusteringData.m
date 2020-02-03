@@ -75,7 +75,7 @@ for j = 1:length(fileName)
                 {[filePath fileName{j}]} % File path
                 {i} % Call ID in file
                 {stats.Power}
-                {call.RelBox(4)}
+                {call.RelBox(4)}              
                 ]'];
             
             clustAssign = [clustAssign; file.Calls.Type(i)];
