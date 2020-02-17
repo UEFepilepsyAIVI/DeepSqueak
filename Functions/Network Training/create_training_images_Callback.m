@@ -40,7 +40,7 @@ c=0;
 for k = 1:length(trainingdata)
     TTable = table({},{},'VariableNames',{'imageFilename','USV'});
 
-    [Calls,~,~] = loadCallfile([trainingpath trainingdata{k}],handles.data.settings.audiofolder,handles);
+    [Calls,~,~] = loadCallfile([trainingpath trainingdata{k}],handles);
 
 
     [p, filename] = fileparts(trainingdata{k});

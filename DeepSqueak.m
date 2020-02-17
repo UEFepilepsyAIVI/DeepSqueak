@@ -547,11 +547,17 @@ prompt = {
     'Label 10  --- Key 0'
     'Label 11  --- Key -'
     'Label 12  --- Key ='
+    'Label 13  --- Key !'
+    'Label 14  --- Key "'
+    'Label 15  --- Key #'   
+    'Label 16  --- Key ¤'   
+    'Label 17  --- Key &'
+    'Label 18  --- Key /'    
     };
 dlg_title = 'Set Custom Label Names';
 num_lines=[1,60]; options.Resize='off'; options.WindowStyle='modal'; options.Interpreter='tex';
 old_labels = handles.data.settings.labels;
-new_labels = inputdlg(prompt,dlg_title,num_lines,old_labels,options);
+new_labels = inputdlg(prompt,dlg_title,num_lines,old_labels,options);23
 if ~isempty(new_labels)
     handles.data.settings.labels = new_labels;
     handles.data.saveSettings();

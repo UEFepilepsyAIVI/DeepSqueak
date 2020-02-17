@@ -158,11 +158,19 @@ function mouse_over_Callback(hObject, eventdata, handles)
     call_id = '';
     
     clustIndex = find(clustAssign==clusters(k));
+    
+    if sum(clustAssign==clusters(k)) == 0
+       return; 
+    end
 
     for i=1:length(ha)
+      
         if i <= length(clustIndex) - (page - 1)*length(ha)
-            call_index = clustIndex(i + (page - 1)*length(ha));
+            
+            callID = i + (page - 1)*length(ha);
+            call_index = clustIndex(callID);
             cursor_point = get(d,'currentpoint');
+
             axis_position = get(ha(i),'Position');
 
             if cursor_point(1)>axis_position(1) && cursor_point(2)>axis_position(2) && cursor_point(1) < (axis_position(1)+axis_position(3)) && cursor_point(2)<(axis_position(2)+axis_position(4))
@@ -199,30 +207,19 @@ end
 function render_GUI(d)
 global k clustAssign clusters rejected ClusteringData minfreq maxfreq d ha ColorData txtbox totalCount count clusterName handle_image page pagenumber finished thumbnail_size
   
-    clustIndex = find(clustAssign==clusters(k));
-    
-    if length(clustIndex) == 0
-      k = 1
-      valid_clusters = unique(clustAssign);
-
-      if length(valid_clusters) == 0
-          return;
-      end 
-      
-      k = valid_clusters(1)
-      page = k
-      clustIndex = find(clustAssign==clusters(k))           
-    end
-
     % Number of calls in each cluster
     for cl = 1:length(clusterName)
         count(cl) = sum(clustAssign==clusters(cl));
     end
-    set(d,'name',['Cluster ' num2str(k) ' of ' num2str(length(count))])
+
+    clustIndex = find(clustAssign==clusters(k));
+      
+    set(d,'name',['Cluster ' num2str(k) ' of ' num2str(length(count))]);
     set(txtbox,'String',string(clusterName(k)));
     set(totalCount,'String',['total count:' char(string(count(k)))]); 
     set(pagenumber,'String',['Page ' char(string(page)) ' of ' char(string(ceil(count(k) / length(ha) )))]);
 
+    
     %% Colormap
     xdata = minfreq:.3:maxfreq;
     color = jet(length(xdata));
@@ -255,38 +252,34 @@ global k clustAssign clusters rejected ClusteringData minfreq maxfreq d ha Color
     
     for i=1:i*j
         if i <= length(clustIndex) - (page - 1)*length(ha)
-
-
-            [colorIM, rel_x, rel_y] = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,i,minfreq,ColorData);     
+            callID = i + (page - 1)*length(ha);
+            [colorIM, rel_x, rel_y] = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,callID,minfreq,ColorData);     
             ha(i) = axes(d,'Units','Normalized','Position',[pos(i,2),pos(i,1),.18,.12]);
             handle_image(i) = image(colorIM + .5 .* rejected(clustIndex(i)),'parent',ha(i));
             set(handle_image(i), 'ButtonDownFcn',{@clicked,clustIndex(i),i,i});
-            %axis(ha(i),'off');
 
-            config_axis(ha(i),i, rel_x, rel_y);
-            add_cluster_context_menu(handle_image(i),clustIndex(i));
-        else
+            config_axis(ha(i),clustIndex(callID), rel_x, rel_y);
+            add_cluster_context_menu(handle_image(i),clustIndex(callID));
+        else   
+            im = zeros(thumbnail_size(1),thumbnail_size(2));
+            im(:,:) = 0.1;
+            colorIM(:,:,1) = im;
+            colorIM(:,:,2) = im;
+            colorIM(:,:,3) = im;            
             ha(i) = axes(d,'Units','Normalized','Position',[pos(i,2),pos(i,1),.18,.12]);
             handle_image(i) = image(colorIM,'parent',ha(i));
             set(ha(i),'Visible','off')
             set(get(ha(i),'children'),'Visible','off');
-            %axis(ha(i),'off');
-            %config_axis(i,colorIM, rel_x, rel_y);
-              
         end
-
-
-
-    end
-    
+    end    
 
 end
 
 
 function config_axis(axis_handles,i, rel_x, rel_y)
 global ha ClusteringData
-        set(axis_handles,'xcolor','w')
-        set(axis_handles,'ycolor','w') 
+        set(axis_handles,'xcolor','w');
+        set(axis_handles,'ycolor','w');
 
         x_lim = xlim(axis_handles);
         x_span = x_lim(2) - x_lim(1);
@@ -317,12 +310,13 @@ function plotimages
     for i=1:length(ha)
         if i <= length(clustIndex) - (page - 1)*length(ha)
            % set(ha(i),'Visible','off')
+           
             set(get(ha(i),'children'),'Visible','on');
+  
             callID = i + (page - 1)*length(ha);
             [colorIM, rel_x, rel_y] = create_thumbnail(ClusteringData,clustIndex,thumbnail_size,callID,minfreq,ColorData);
-
             set(handle_image(i), 'ButtonDownFcn',{@clicked,clustIndex(callID),i,callID});
-            add_cluster_context_menu(handle_image(i),clustIndex(i));
+            add_cluster_context_menu(handle_image(i),clustIndex(callID));
             if rejected(clustIndex(callID))
                 colorIM(:,:,1) = colorIM(:,:,1) + .5;
             end
@@ -354,11 +348,11 @@ global clustAssign clusterName
         set(hObject, 'UIContextMenu',c);
 end
 
-function assign_cluster(hObject,eventdata,i, clusterIndex)
+function assign_cluster(hObject,eventdata,i, clusterLabel)
     global clustAssign d
-    clustAssign(i) = clusterIndex;
+    clustAssign(i) = clusterLabel;
     
-    set(d, 'pointer', 'watch')     
+    set(d, 'pointer', 'watch');     
     gui_components = allchild(d);
 
     for i=1:length(gui_components)
@@ -367,7 +361,7 @@ function assign_cluster(hObject,eventdata,i, clusterIndex)
         end
     end
 
-    render_GUI(d)
+    render_GUI(d);
     drawnow;
 
     set(d, 'pointer', 'arrow');
