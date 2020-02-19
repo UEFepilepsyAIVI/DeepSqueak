@@ -37,7 +37,6 @@ function render_call_boxes(current_axes,handles, hObject,roi, fill_heigth)
     end
    guidata(hObject,handles);
    refresh(handles.hFig);
-   c = uicontextmenu;
 
    
    I = find( (handles.data.calls.Box(:,1) >= axis_xlim(1) & handles.data.calls.Box(:,1) < axis_xlim(2)  ) ...
@@ -73,6 +72,7 @@ function render_call_boxes(current_axes,handles, hObject,roi, fill_heigth)
             end
             
             if roi
+                c = uicontextmenu;     
                 current_box = drawrectangle('Position',...
                                             [current_box(1), ...
                                             box_y,...
@@ -87,12 +87,14 @@ function render_call_boxes(current_axes,handles, hObject,roi, fill_heigth)
                                             'LineWidth',...
                                             line_width,...
                                             'Tag',...
-                                           current_tag);
+                                           current_tag,...
+                                           'uicontextmenu',...
+                                            c);
                 handles.current_roi_list{end+1} = current_box;
-                set(current_box,'uicontextmenu',uicontextmenu);
+
                 addlistener(current_box,'ROIClicked',@callBoxDeleteCallback);
-                addlistener(current_box,'ROIMoved', @roiMovedCallback);                
-                
+                addlistener(current_box,'ROIMoved', @roiMovedCallback);     
+      
             else
                 currentZSpectogramWindowRectangle = rectangle(current_axes,'Position',[current_box(1), box_y,current_box(3), box_heigth],'LineWidth',line_width,'LineStyle',line_style);
                 currentZSpectogramWindowRectangle.EdgeColor = box_color;     

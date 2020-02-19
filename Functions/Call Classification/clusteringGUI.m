@@ -338,7 +338,7 @@ end
 
 function add_cluster_context_menu(hObject, i)
 global clustAssign clusterName
-        unique_clusters = unique(clustAssign);
+        unique_clusters = unique(clusterName);
 
         c = uicontextmenu;
         for ci=1:length(unique_clusters)
