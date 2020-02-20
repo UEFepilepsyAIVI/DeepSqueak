@@ -1,8 +1,16 @@
-function [I,windowsize,noverlap,nfft,rate,box,s,fr,ti,audio,AudioRange,window_start] = CreateFocusSpectrogram(call,handles, call_only)
+function [I,windowsize,noverlap,nfft,rate,box,s,fr,ti,audio,AudioRange,window_start] = CreateFocusSpectrogram(call,handles, call_only,options)
 %% Extract call features for CalculateStats and display
 
 if nargin < 3
     call_only = false;
+end
+
+if nargin < 4
+    options = struct;
+    options.frequency_padding = 0;
+    options.nfft = 0.0032;
+    options.overlap = 0.0028;
+    options.windowsize = 0.0032;
 end
 
 rate = call.Rate;
@@ -60,9 +68,9 @@ elseif ~isa(audio,'double')
     audio = double(audio);
 end
 
-windowsize = round(rate * 0.0032);
-noverlap = round(rate * 0.0028);
-nfft = round(rate * 0.0032);
+windowsize = round(rate * options.windowsize);
+noverlap = round(rate * options.overlap);
+nfft = round(rate * options.nfft);
 
 % Spectrogram
 [s, fr, ti] = spectrogram(audio,windowsize,noverlap,nfft,rate,'yaxis');
@@ -93,8 +101,10 @@ y2=find(fr./1000>=round(call.Box(2)+call.Box(4)),1);
 I=abs(s(:,x1:x2));
 
 if call_only
-    y1=find(fr./1000>=round(call.Box(2)),1);
-    y2=find(fr./1000>=round(call.Box(2)+call.Box(4)),1);
+    y1=find(fr./1000>=round(call.Box(2)-options.frequency_padding),1);
+    max_freq = round(call.Box(2)+call.Box(4)+options.frequency_padding);
+    kHz = fr./1000;
+    y2=find(kHz>=min(max_freq,max(kHz)),1);
     I=abs(s(y1:y2,x1:x2));
 end
 

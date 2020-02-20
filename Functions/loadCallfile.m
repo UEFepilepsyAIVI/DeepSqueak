@@ -20,7 +20,7 @@ end
 if ~exist('audiodata') | ~isfield(audiodata,'AudioFile') | audiodata.AudioFile == 0
      audiodata = struct;
     [filepath,name,ext] = fileparts(filename); 
-    audiofile_name = regexp(name,  '([\w-_]+)(?=\s)','match');
+    audiofile_name = regexp(name,  '([\w_]+)(?=\s)','match');
     audiofile_name = audiofile_name{1};
     for i=1:length(handles.audiofilesnames) 
 
