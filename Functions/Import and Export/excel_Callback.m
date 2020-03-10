@@ -13,9 +13,13 @@ function excel_Callback(hObject, eventdata, handles)
                    warning(sprintf('Call box start beyond audio duration. Skipping call %i in file %s',i,call_file)); 
                    continue;
                 end
+                %Skip boxes with zero time of frequency span
+                if box(3) == 0 | box(4) == 0
+                   continue; 
+                end
                 
                 % Get spectrogram data
-                 [I,windowsize,noverlap,nfft,rate,box,window_start] = CreateFocusSpectrogram(Calls(i, :),handles,true);
+                [I,windowsize,noverlap,nfft,rate,box,window_start] = CreateFocusSpectrogram(Calls(i, :),handles,true);
                 % Calculate statistics
                 stats = CalculateStats(I,windowsize,noverlap,nfft,rate,box,handles.data.settings.EntropyThreshold,handles.data.settings.AmplitudeThreshold);
 

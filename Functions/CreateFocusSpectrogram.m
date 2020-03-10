@@ -72,6 +72,7 @@ windowsize = round(rate * options.windowsize);
 noverlap = round(rate * options.overlap);
 nfft = round(rate * options.nfft);
 
+
 % Spectrogram
 [s, fr, ti] = spectrogram(audio,windowsize,noverlap,nfft,rate,'yaxis');
 
