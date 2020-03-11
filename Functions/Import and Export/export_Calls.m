@@ -12,7 +12,7 @@ fname = cellstr(fname);
 includereject = questdlg('Include Rejected Calls?','Export','Yes','No','No');
 if isempty(includereject); return; end
 includereject = strcmp(includereject,'Yes');
-merge_exported = false;
+merge_exported = 'No';
 if length(fname) > 1
    merge_exported = questdlg('Merge into a single file?','Merge','Yes', 'No', 'No'); 
 end
@@ -35,14 +35,14 @@ for j = 1:length(fname) % Do this for each file
     [~,FileName,~] = fileparts(fname{j});
 
 
-    t = loop_function(Calls,hc,includereject,['Exporting calls from file ' num2str(j) ' of ' num2str(length(fname))],handles,FileName,audiodata);
+    t = loop_function(Calls,hc,includereject,['Exporting calls from file ' num2str(j) ' of ' num2str(length(fname))],handles,currentfile,audiodata);
 
 
     outputName = fullfile(PathName,[FileName file_postfix]);
     if exist(outputName, 'file')==2
         delete(outputName);
     end
-    if merge_exported
+    if strcmp(merge_exported,'Yes')
         %Skip the header of all files except the first
         if ~isempty(t_merged)
            t = t(2:end,:); 
@@ -53,7 +53,7 @@ for j = 1:length(fname) % Do this for each file
     end
 end
 
-if merge_exported
+if strcmp(merge_exported,'Yes')
     FileName = [ datestr(datetime('now'), 'mm_dd_yy-HH_MM_SS') '_merged'];
     outputName = fullfile(PathName,[FileName file_postfix]);
 

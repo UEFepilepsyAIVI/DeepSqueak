@@ -53,7 +53,7 @@ for j = 1:length(fileName)
             end
             
             call = Calls(i,:);
-            
+
             [I,wind,noverlap,nfft,rate,box,~] = CreateFocusSpectrogram(call,handles,true);
             im = mat2gray(flipud(I),[0 max(max(I))/4]); % Set max brightness to 1/4 of max
             

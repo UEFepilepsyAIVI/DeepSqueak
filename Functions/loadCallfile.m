@@ -8,7 +8,18 @@ load(filename, 'ClusteringData)');
 
 % Backwards compatibility with struct format for detection files
 if isstruct(Calls); Calls = struct2table(Calls, 'AsArray', true); end
-if isempty(Calls); disp(['No calls in file: ' filename]); end
+if isempty(Calls); 
+    disp(['No calls in file: ' filename]); 
+else
+   invalid_calls = [];
+   for i=1:size(Calls,1)
+       call_box = Calls{i,'Box'};
+       if call_box(3) == 0 | call_box(4) == 0
+          invalid_calls = [invalid_calls, i]; 
+       end
+   end
+   Calls(invalid_calls,:) = [];
+end
 
 %Handles are required for audiodata. When hanles are missing, return only
 %the calls
@@ -16,21 +27,6 @@ if isempty(handles)
     return;
 end
 
-%Try to match the detections to a file in the Audio folder
-if ~exist('audiodata') | ~isfield(audiodata,'AudioFile') | audiodata.AudioFile == 0
-     audiodata = struct;
-    [filepath,name,ext] = fileparts(filename); 
-    audiofile_name = regexp(name,  '([\w_]+)(?=\s)','match');
-    audiofile_name = audiofile_name{1};
-    for i=1:length(handles.audiofilesnames) 
-
-        if ~isempty(regexp(handles.audiofilesnames{i}, strcat('^',audiofile_name, '[.]'),'match'))
-            audiodata.AudioFile  = handles.audiofilesnames{i}; 
-        end
-    end  
-end
-
-%If matching audiofile cannot be found, show file selection dialog
 if  ~exist('audiodata') | ~isfield(audiodata,'AudioFile') | ~isfile(filename)
     [~, file_part] = fileparts(filename); 
     [file,path] = uigetfile({'*.wav'; '*.ogg'; '*.flac'; '*.au'; '*.aiff'; '*.aif'; '*.aifc'; '*.mp3'; '*.m4a';'*.mp4';}, sprintf('Select audio matching the detection file %s',file_part));   

@@ -8,7 +8,7 @@ if isempty(handles.data.calls)
 end
 
 set(0,'defaultFigureVisible','off');
-if handles.data.current_call_valid | ~isempty(handles.current_focus_position)
+if ( handles.data.current_call_valid | ~isempty(handles.current_focus_position) )
     update_focus_display(hObject,handles);
 end
 handles = guidata(hObject);

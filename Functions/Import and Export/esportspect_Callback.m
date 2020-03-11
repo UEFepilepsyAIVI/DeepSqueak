@@ -16,8 +16,8 @@ Ydata = get(handles.spect,'Ydata');
 Ylim = get(handles.axes1,'Ylim');
 
 % Set limits
-Ymax = find(Ydata>Ylim(2),1);
-Ymin = find(Ydata>Ylim(1),1);
+Ymax = find(Ydata>=Ylim(2),1);
+Ymin = find(Ydata>=Ylim(1),1);
 I = flipud(I(Ymin:Ymax,:));
 
 Clim = get(handles.axes1,'Clim');

@@ -14,8 +14,7 @@ function callBoxDeleteCallback(rectangle,evt)
                  next_tag = max(str2double(current_tag)-1,1);     
 
                  guidata(hObject,handles);
-                               
-                 calls_within_window = list_calls_within_window(handles, xlim(handles.spectogram));
+                              
                  SortCalls(hObject, [], handles, 'time', 0, next_tag);
                  
                  guidata(hObject,handles);

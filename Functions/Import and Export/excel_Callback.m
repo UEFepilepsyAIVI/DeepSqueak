@@ -14,7 +14,8 @@ function excel_Callback(hObject, eventdata, handles)
                    continue;
                 end
                 %Skip boxes with zero time of frequency span
-                if box(3) == 0 | box(4) == 0
+                call_box = Calls{i, 'Box'};
+                if call_box(3) == 0 | call_box(4) == 0
                    continue; 
                 end
                 
