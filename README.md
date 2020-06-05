@@ -1,4 +1,4 @@
-# DeepSqueak Screener
+# DeepSqueak-Screener
 
 [![DOI](https://zenodo.org/badge/211337688.svg)](https://zenodo.org/badge/latestdoi/211337688)
 
