@@ -15,7 +15,7 @@
 - Single Click a location on the scroll bar in map mode = upper spectrogram jumps to that location in the file.
 - Up Arrow = next timepoint in spectrogram, Down Arrow = previous timepoint in spectrogram.
 - Shift + Click on detection to reject it.
-- Select, move, and modify ROIs of detected calls.
+- Select, move, and modify ROIs of detected calls:
 
 ![screenshot](https://i.postimg.cc/8C08C48V/EXAMPLE-02.png)
 
