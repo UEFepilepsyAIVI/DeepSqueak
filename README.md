@@ -16,7 +16,9 @@
 - Up Arrow = next timepoint in spectrogram, Down Arrow = previous timepoint in spectrogram.
 - Shift + Click on detection to reject it.
 - Select, move, and modify ROIs of detected calls.
+
 ![screenshot](https://i.postimg.cc/8C08C48V/EXAMPLE-02.png)
+
 - Possibility to mark calls not detected by FRCNN.
 - Black & white color map.
 - Constant time and spectrogram scales.
