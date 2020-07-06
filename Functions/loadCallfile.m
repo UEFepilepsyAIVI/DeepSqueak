@@ -27,9 +27,14 @@ if isempty(handles)
     return;
 end
 
-if  ~exist('audiodata') | ~isfield(audiodata,'AudioFile') | ~isfile(filename)
+if  ~exist('audiodata') | ~isfield(audiodata,'AudioFile') | ~isfile(filename) | ~isfield(audiodata,'duration')
     [~, file_part] = fileparts(filename); 
-    [file,path] = uigetfile({'*.wav'; '*.ogg'; '*.flac'; '*.au'; '*.aiff'; '*.aif'; '*.aifc'; '*.mp3'; '*.m4a';'*.mp4';}, sprintf('Select audio matching the detection file %s',file_part));   
+    [file,path] = uigetfile({'*.wav'; '*.ogg'; '*.flac'; '*.au'; '*.aiff'; '*.aif'; '*.aifc'; '*.mp3'; '*.m4a';'*.mp4';}, sprintf('Importing from standard DeepSquek. Select audio matching the detection file %s',file_part));  
+    
+    audiodata = struct;
+    info = audioinfo([path,file]);
+    audiodata.duration = info.Duration;
+    
     audiodata.AudioFile = file;
     save(filename,'Calls','ClusteringData','audiodata','-v7.3');
     

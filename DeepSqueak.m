@@ -801,7 +801,7 @@ function submit_a_bug_Callback(hObject, eventdata, handles)
 % hObject    handle to submit_a_bug (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-web('https://github.com/DrCoffey/DeepSqueak/issues','-browser');
+web('https://github.com/UEFepilepsyAIVI/DeepSqueak/issues','-browser');
 
 % --- Executes on slider movement.
 function optimization_slider_Callback(hObject, eventdata, handles)

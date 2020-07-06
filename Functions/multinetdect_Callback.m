@@ -97,7 +97,6 @@ for j = 1:length(audioselections)
     audiodata = struct;
     
     info = audioinfo(AudioFile);
-    rate = info.SampleRate;
     audiodata.duration = info.Duration;
     
     [y,Fs] = audioread(AudioFile);
